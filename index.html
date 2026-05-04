@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ServiçoFácil</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#eeede8;
+  --border:#d8d6ce;--border2:#e8e5de;
+  --text:#1a1917;--text2:#6b6a65;--text3:#9e9c96;
+  --green:#166534;--green-bg:#f0fdf4;--green-bd:#86efac;
+  --blue:#1d4ed8;--blue-bg:#eff6ff;--blue-bd:#bfdbfe;
+  --amber:#92400e;--amber-bg:#fffbeb;--amber-bd:#fde68a;
+  --red:#991b1b;--red-bg:#fef2f2;--red-bd:#fecaca;
+  --wpp:#25D366;--wpp-dark:#128C7E;
+  --r:8px;--rlg:12px;
+  --header:52px;--nav:44px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+input,select,textarea,button{font-family:'IBM Plex Sans',sans-serif;font-size:15px}
+
+.hdr{background:var(--text);color:#fff;height:var(--header);display:flex;align-items:center;justify-content:space-between;padding:0 1rem;position:sticky;top:0;z-index:200}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500}.logo span{color:var(--wpp)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.emp-btn{font-size:11px;color:#9e9c96;font-family:'IBM Plex Mono',monospace;background:none;border:none;color:#9e9c96;cursor:pointer;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.emp-btn:hover{color:#fff}
+
+.nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:var(--header);z-index:199}
+.nav::-webkit-scrollbar{display:none}
+.nav-tab{font-size:13px;padding:0 14px;height:var(--nav);color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-weight:500;white-space:nowrap;display:flex;align-items:center;flex-shrink:0}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--text)}
+
+.main{max-width:680px;margin:0 auto;padding:1rem 1rem 6rem}
+.page{display:none}.page.active{display:block}
+
+.setup-bar{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--rlg);padding:.9rem 1rem;margin-bottom:1rem}
+.setup-bar p{font-size:13px;color:var(--amber);margin-bottom:.6rem;font-weight:500}
+.setup-row{display:flex;gap:8px}
+.setup-input{flex:1;font-size:14px;padding:8px 10px;border:1px solid var(--amber-bd);border-radius:var(--r);background:#fff;color:var(--amber)}
+
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:.8rem 1rem}
+.metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;font-family:'IBM Plex Mono',monospace}
+.metric-val{font-size:22px;font-weight:600}
+.m-blue{color:var(--blue)}.m-amber{color:var(--amber)}.m-green{color:var(--green)}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;gap:8px}
+.filters{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex:1}
+.filters::-webkit-scrollbar{display:none}
+.filter-btn{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.filter-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+
+.btn{font-size:14px;font-weight:500;padding:10px 18px;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-dark{background:var(--text);color:#fff;border-color:var(--text)}
+.btn-ghost{background:transparent;color:var(--text)}
+.btn-ghost:hover{background:var(--surface2)}
+.btn-red{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
+.btn-red:hover{background:#fee2e2}
+.btn-sm{font-size:13px;padding:7px 14px}
+.btn-wpp{font-size:14px;font-weight:500;padding:12px 18px;border-radius:var(--r);border:none;background:var(--wpp);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:6px;transition:background .15s;min-height:48px}
+.btn-wpp:hover{background:var(--wpp-dark)}
+.btn-wpp:disabled{opacity:.5;cursor:not-allowed}
+.btn-add-mat{font-size:13px;padding:8px 12px;border-radius:var(--r);border:1px dashed var(--blue-bd);background:transparent;color:var(--blue);cursor:pointer;margin-bottom:10px;width:100%;text-align:center}
+
+.form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:1.1rem;margin-bottom:1rem;display:none}
+.form-panel.open{display:block}
+.form-panel h3{font-size:14px;font-weight:600;margin-bottom:.9rem;font-family:'IBM Plex Mono',monospace}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.field label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace}
+.field input,.field select,.field textarea{font-size:15px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s;width:100%;min-height:44px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--text);background:#fff}
+.field textarea{resize:vertical;min-height:80px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-actions{display:flex;gap:8px;margin-top:14px}
+.form-divider{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:14px 0 8px;padding-top:14px;border-top:1px solid var(--border2);font-family:'IBM Plex Mono',monospace}
+
+.os-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.os-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:.9rem 1rem;cursor:pointer;transition:border-color .15s;position:relative}
+.os-card:active{background:var(--surface2)}
+.os-card.concluida{border-left:3px solid var(--wpp)}
+.os-card.selecionada{border-color:var(--blue);background:var(--blue-bg)}
+.os-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px}
+.os-card-left{flex:1;min-width:0}
+.os-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:2px}
+.os-cliente{font-size:15px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.os-desc{font-size:13px;color:var(--text2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.os-meta{font-size:12px;color:var(--text3);margin-top:4px}
+.os-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.os-valor{font-size:13px;font-weight:500;font-family:'IBM Plex Mono',monospace}
+
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.badge-aberta{background:var(--blue-bg);color:var(--blue)}
+.badge-andamento{background:var(--amber-bg);color:var(--amber)}
+.badge-concluida{background:var(--green-bg);color:var(--green)}
+.badge-cancelada{background:var(--red-bg);color:var(--red)}
+
+.sel-bar{display:none;background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:var(--rlg);padding:.75rem 1rem;margin-bottom:.75rem;flex-wrap:wrap;gap:8px;align-items:center}
+.sel-bar.show{display:flex}
+.sel-info{font-size:13px;color:var(--blue);font-weight:500;flex:1}
+.sel-actions{display:flex;gap:8px}
+.checkbox-os{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;transition:all .15s}
+.checkbox-os.checked{background:var(--blue);border-color:var(--blue)}
+.checkbox-os.checked::after{content:'✓';color:#fff;font-size:12px;font-weight:700}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+@media(min-width:600px){.modal-overlay{align-items:center}}
+.modal{background:var(--surface);border-radius:var(--rlg) var(--rlg) 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:1.25rem 1.1rem 2rem}
+@media(min-width:600px){.modal{border-radius:var(--rlg);max-height:90vh}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1rem;display:block}
+@media(min-width:600px){.modal-handle{display:none}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.modal-id{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:3px}
+.modal-cliente{font-size:18px;font-weight:600}
+.close-btn{background:none;border:none;font-size:24px;color:var(--text3);cursor:pointer;line-height:1;padding:0 4px;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--surface2);font-size:14px;gap:12px}
+.detail-row:last-of-type{border-bottom:none}
+.detail-key{color:var(--text2);flex-shrink:0}
+.detail-val{font-weight:500;text-align:right;max-width:65%}
+.detail-val.full{max-width:100%;text-align:left;font-weight:400;color:var(--text2);line-height:1.55}
+.status-changer{margin-top:1rem}
+.status-changer label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace;display:block;margin-bottom:6px}
+.status-changer select{font-size:15px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);width:100%;min-height:44px;cursor:pointer}
+
+.conclusao-form{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:var(--rlg);padding:1rem;margin-top:1rem}
+.conclusao-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);margin-bottom:.75rem;font-family:'IBM Plex Mono',monospace}
+.conclusao-form .field label{color:var(--blue);opacity:.8}
+.conclusao-form .field input,.conclusao-form .field textarea{background:#fff;border-color:var(--blue-bd)}
+.mat-row{display:grid;grid-template-columns:1fr 72px 80px 36px;gap:6px;margin-bottom:6px;align-items:center}
+.mat-row input{font-size:13px;padding:8px 9px;border:1px solid var(--blue-bd);border-radius:var(--r);background:#fff;color:var(--text);min-height:40px}
+.btn-rem{background:none;border:none;color:var(--red);cursor:pointer;font-size:20px;padding:0;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center}
+.total-row-conclusao{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px;padding-top:10px;border-top:1px dashed var(--blue-bd)}
+.total-box{background:#fff;border:1px solid var(--blue-bd);border-radius:var(--r);padding:8px 10px}
+.total-box-label{font-size:10px;color:var(--blue);opacity:.7;text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace;margin-bottom:2px}
+.total-box-val{font-size:16px;font-weight:600;color:var(--blue);font-family:'IBM Plex Mono',monospace}
+
+.wpp-block{margin-top:1rem;background:var(--green-bg);border:1px solid var(--green-bd);border-radius:var(--rlg);padding:1rem}
+.wpp-title{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.wpp-preview{font-size:13px;color:var(--green);background:#fff;border:1px solid var(--green-bd);border-radius:var(--r);padding:.7rem .9rem;margin-bottom:.75rem;line-height:1.7;font-style:italic}
+.wpp-label{font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;display:block}
+.wpp-textarea{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--green-bd);border-radius:var(--r);background:#fff;color:var(--green);resize:vertical;min-height:80px;margin-bottom:8px}
+.wpp-hint{font-size:12px;color:var(--green);margin-bottom:10px}
+.pending-block{margin-top:1rem;background:var(--surface2);border-radius:var(--r);padding:.75rem 1rem;font-size:13px;color:var(--text3)}
+
+.mat-table{width:100%;border-collapse:collapse;font-size:13px}
+.mat-table th{text-align:left;padding:5px 8px;font-weight:500;color:var(--text3);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.mat-table td{padding:6px 8px;border-bottom:1px solid var(--surface2)}
+.mat-table tr:last-child td{border-bottom:none}
+.mat-table .total-tr td{font-weight:600;border-top:1px solid var(--border);background:var(--surface2)}
+
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:center;justify-content:center;padding:1rem}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--surface);border-radius:var(--rlg);padding:1.5rem;max-width:360px;width:100%}
+.confirm-box h3{font-size:16px;font-weight:600;margin-bottom:.6rem}
+.confirm-box p{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:1.25rem}
+.confirm-actions{display:flex;gap:8px}
+
+.rel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem;flex-wrap:wrap;gap:8px}
+.rel-title{font-size:16px;font-weight:600}
+.rel-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mes-select{font-size:14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);color:var(--text);cursor:pointer;min-height:40px}
+.rel-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1.25rem}
+.rel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:.8rem 1rem}
+.rel-card-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;font-family:'IBM Plex Mono',monospace}
+.rel-card-val{font-size:20px;font-weight:600}
+.rel-card-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.rel-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;margin-bottom:1rem}
+.rel-section-title{font-size:13px;font-weight:600;padding:.8rem 1rem;border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;display:flex;justify-content:space-between;align-items:center}
+.rel-table{width:100%;border-collapse:collapse;font-size:13px}
+.rel-table th{text-align:left;padding:8px 10px;font-weight:500;color:var(--text3);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.rel-table td{padding:9px 10px;border-bottom:1px solid var(--surface2);vertical-align:top}
+.rel-table tr:last-child td{border-bottom:none}
+.rel-table .total-tr td{font-weight:600;border-top:1px solid var(--border);background:var(--surface2)}
+.rel-table td.mono{font-family:'IBM Plex Mono',monospace}
+.rel-table td.right{text-align:right}
+.rel-empty{text-align:center;padding:2rem;font-size:13px;color:var(--text3)}
+.rel-os-item{padding:.75rem 1rem;border-bottom:1px solid var(--surface2)}
+.rel-os-item:last-child{border-bottom:none}
+.rel-os-row1{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:2px}
+.rel-os-nome{font-size:13px;font-weight:500}
+.rel-os-valor{font-size:13px;font-weight:500;font-family:'IBM Plex Mono',monospace;flex-shrink:0}
+.rel-os-desc{font-size:12px;color:var(--text2)}
+.rel-os-meta{font-size:11px;color:var(--text3);margin-top:2px}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--text);color:#fff;font-size:13px;font-weight:500;padding:10px 18px;border-radius:24px;z-index:500;transition:transform .25s;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px}
+
+
+/* ── TELA DE LOGIN ── */
+#login-screen{position:fixed;inset:0;background:#f5f4f0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-box{background:#fff;border:1px solid #d8d6ce;border-radius:16px;padding:2rem;width:100%;max-width:360px}
+.login-logo{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:#1a1917;text-align:center;margin-bottom:4px}
+.login-logo span{color:#25D366}
+.login-sub{font-size:13px;color:#9e9c96;text-align:center;margin-bottom:1.75rem}
+.login-label{font-size:11px;color:#9e9c96;text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace;display:block;margin-bottom:6px}
+.login-input{width:100%;font-size:16px;padding:12px 14px;border:1px solid #d8d6ce;border-radius:8px;background:#f5f4f0;color:#1a1917;outline:none;margin-bottom:12px;transition:border-color .15s}
+.login-input:focus{border-color:#1a1917;background:#fff}
+.login-btn{width:100%;padding:13px;border-radius:8px;background:#1a1917;color:#fff;font-size:15px;font-weight:500;border:none;cursor:pointer;margin-bottom:1rem;font-family:'IBM Plex Sans',sans-serif;transition:opacity .15s}
+.login-btn:hover{opacity:.85}
+.login-btn:active{opacity:.7}
+.login-erro{font-size:13px;color:#991b1b;text-align:center;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px;margin-bottom:12px;display:none}
+.login-info{font-size:12px;color:#9e9c96;text-align:center;line-height:1.6;border-top:1px solid #eeede8;padding-top:1rem;margin-top:.5rem}
+
+/* ── PAGAMENTO MOBILE-FIRST ── */
+.pag-entrada-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.pag-entrada-grid .pag-field{display:flex;flex-direction:column;gap:4px}
+.pag-entrada-grid .pag-field.full{grid-column:1/-1}
+.pag-field-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace}
+.pag-input{font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);width:100%;min-height:44px;outline:none;transition:border-color .15s}
+.pag-input:focus{border-color:var(--text);background:#fff}
+.pag-receber-btn{font-size:13px;font-weight:500;padding:10px 14px;border-radius:var(--r);border:1px solid var(--green-bd);background:var(--green-bg);color:var(--green);cursor:pointer;width:100%;min-height:44px;transition:all .15s;text-align:center}
+.pag-receber-btn.pago{background:var(--green);color:#fff;border-color:var(--green)}
+.pag-receber-btn:active{opacity:.8}
+
+/* Card de parcela — mobile */
+.pc-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:8px;position:relative}
+.pc-card-top{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.pc-card-num{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'IBM Plex Mono',monospace}
+.pc-card-rem{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px 6px;border-radius:4px;line-height:1}
+.pc-card-rem:hover{color:var(--red);background:var(--red-bg)}
+.pc-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.pc-card-grid .pag-field.full{grid-column:1/-1}
+
+/* ── FINANCEIRO ── */
+.fin-tipo-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.fin-tipo-btn{font-size:12px;padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.fin-tipo-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.pag-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:1rem;margin-top:1rem}
+.pag-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.8rem;font-family:"IBM Plex Mono",monospace}
+.pag-row{display:grid;grid-template-columns:1fr 100px 110px 90px 36px;gap:6px;margin-bottom:6px;align-items:center}
+.pag-row input,.pag-row select{font-size:13px;padding:7px 8px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:38px;width:100%}
+.pag-row input:focus,.pag-row select:focus{border-color:var(--text);background:#fff;outline:none}
+.btn-recebido{font-size:11px;padding:5px 8px;border-radius:var(--r);border:1px solid var(--green-bd);background:var(--green-bg);color:var(--green);cursor:pointer;white-space:nowrap;min-height:38px}
+.btn-recebido.pago{background:var(--green);color:#fff;border-color:var(--green)}
+.pag-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
+.pag-resumo-box{border-radius:var(--r);padding:8px 10px;text-align:center}
+.pag-resumo-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-family:"IBM Plex Mono",monospace;margin-bottom:3px}
+.pag-resumo-val{font-size:15px;font-weight:600;font-family:"IBM Plex Mono",monospace}
+.fin-card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1rem}
+.fin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:.8rem 1rem}
+.fin-card-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;font-family:"IBM Plex Mono",monospace}
+.fin-card-val{font-size:20px;font-weight:600}
+.fin-card-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.fin-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;margin-bottom:1rem}
+.fin-section-title{font-size:13px;font-weight:600;padding:.8rem 1rem;border-bottom:1px solid var(--border);font-family:"IBM Plex Mono",monospace;display:flex;justify-content:space-between;align-items:center}
+.fin-item{padding:.7rem 1rem;border-bottom:1px solid var(--surface2);font-size:13px}
+.fin-item:last-child{border-bottom:none}
+.fin-item-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fin-item-left{flex:1;min-width:0}
+.fin-item-os{font-size:11px;color:var(--text3);font-family:"IBM Plex Mono",monospace}
+.fin-item-nome{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fin-item-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.fin-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.fin-item-val{font-weight:600;font-family:"IBM Plex Mono",monospace}
+.fin-item-forma{font-size:11px;color:var(--text3)}
+.atraso-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.avencer-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.recebido-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+
+/* ── EDIÇÃO DE OS ── */
+.edit-field{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-bottom:1px solid var(--surface2)}
+.edit-field:last-of-type{border-bottom:none}
+.edit-field label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace}
+.edit-field input,.edit-field select,.edit-field textarea{font-size:15px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s;width:100%;min-height:44px}
+.edit-field input:focus,.edit-field select:focus,.edit-field textarea:focus{border-color:var(--text);background:#fff}
+.edit-field textarea{resize:vertical;min-height:72px}
+.btn-edit{font-size:13px;font-weight:500;padding:7px 14px;border-radius:var(--r);border:1px solid var(--blue-bd);background:var(--blue-bg);color:var(--blue);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.btn-edit:hover{background:var(--blue);color:#fff}
+.btn-save-edit{font-size:13px;font-weight:500;padding:7px 14px;border-radius:var(--r);border:none;background:var(--text);color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.btn-cancel-edit{font-size:13px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer}
+
+/* ── RECEBIMENTOS / IMPRESSÃO ── */
+.receb-periodo{font-size:13px;color:var(--text2);margin-bottom:1rem}
+.receb-sumario{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.receb-sum-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:.8rem 1rem;text-align:center}
+.receb-sum-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'IBM Plex Mono',monospace;margin-bottom:4px}
+.receb-sum-val{font-size:18px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.receb-sum-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.receb-grupo{background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden;margin-bottom:1rem}
+.receb-grupo-header{padding:.7rem 1rem;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace;display:flex;justify-content:space-between;align-items:center}
+.receb-grupo-header.pago{background:var(--green-bg);color:var(--green);border-bottom:1px solid var(--green-bd)}
+.receb-grupo-header.parcial{background:var(--amber-bg);color:var(--amber);border-bottom:1px solid var(--amber-bd)}
+.receb-grupo-header.pendente{background:var(--red-bg);color:var(--red);border-bottom:1px solid var(--red-bd)}
+.receb-os-row{padding:.75rem 1rem;border-bottom:1px solid var(--surface2);font-size:13px}
+.receb-os-row:last-child{border-bottom:none}
+.receb-os-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.receb-os-id{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3)}
+.receb-os-nome{font-weight:600;font-size:14px}
+.receb-os-desc{font-size:12px;color:var(--text2);margin-top:1px}
+.receb-os-valores{display:flex;gap:12px;align-items:center;flex-shrink:0;text-align:right}
+.receb-val-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace}
+.receb-val-num{font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.receb-parcelas-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.receb-parcelas-table th{text-align:left;padding:4px 8px;font-weight:500;color:var(--text3);border-bottom:1px solid var(--border2);font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.receb-parcelas-table td{padding:5px 8px;border-bottom:1px solid var(--surface2)}
+.receb-parcelas-table tr:last-child td{border-bottom:none}
+.receb-pago-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);font-weight:500}
+.receb-pend-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);font-weight:500}
+.receb-grupo-footer{padding:.6rem 1rem;display:flex;justify-content:space-between;font-size:12px;font-weight:600;background:var(--surface2)}
+
+@media print{
+  .hdr,.nav,.toolbar,.form-panel,.sel-bar,.btn-sel-mode,
+  .modal-overlay,.confirm-overlay,.toast,.loading-bar,
+  #page-os,#page-rel-os,#page-rel-mat,
+  #receb-filtro-mes,#receb-filtro-livre,
+  button:not(.no-print){ display:none !important }
+  .page#page-recebimentos{ display:block !important }
+  .main{ padding:0 !important; max-width:100% !important }
+  body{ font-size:12px }
+  .receb-grupo{ break-inside:avoid; page-break-inside:avoid }
+}
+
+/* indicador de carregamento */
+.loading-bar{position:fixed;top:0;left:0;width:100%;height:3px;background:var(--blue);z-index:999;display:none;animation:loadpulse 1s infinite}
+@keyframes loadpulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+.loading-bar.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serviço<span>Fácil</span></div>
+    <div class="login-sub">Sistema de Ordens de Serviço</div>
+    <label class="login-label">Senha de acesso</label>
+    <input type="password" class="login-input" id="login-input"
+      placeholder="Digite sua senha"
+      onkeydown="if(event.key==='Enter') verificarSenha()">
+    <div class="login-erro" id="login-erro">Senha incorreta. Tente novamente.</div>
+    <button class="login-btn" onclick="verificarSenha()">Entrar</button>
+    <div class="login-info">
+      Período de teste: 15 dias<br>
+      Dúvidas? Entre em contato com o administrador.
+    </div>
+  </div>
+</div>
+
+<div class="loading-bar" id="loading-bar"></div>
+
+<div class="hdr">
+  <div class="logo">Serviço<span>Fácil</span></div>
+  <div class="hdr-right">
+    <button class="emp-btn" id="emp-btn" onclick="editarEmpresa()">Configurar empresa</button>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" onclick="setPage('os')">Ordens de Serviço</div>
+  <div class="nav-tab" onclick="setPage('rel-os')">Relatório OS</div>
+  <div class="nav-tab" onclick="setPage('rel-mat')">Materiais</div>
+  <div class="nav-tab" onclick="setPage('recebimentos')">Recebimentos</div>
+</div>
+
+<div class="main">
+
+  <div class="setup-bar" id="setup-bar">
+    <p>Configure o nome da empresa — aparecerá nas mensagens do WhatsApp</p>
+    <div class="setup-row">
+      <input class="setup-input" type="text" id="emp-input" placeholder="Ex: Mecânica do João">
+      <button class="btn btn-dark btn-sm" onclick="salvarEmpresa()">Salvar</button>
+    </div>
+  </div>
+
+  <!-- PAGE OS -->
+  <div class="page active" id="page-os">
+    <div class="metrics" id="metrics"></div>
+
+    <div class="sel-bar" id="sel-bar">
+      <div class="sel-info" id="sel-info">0 selecionadas</div>
+      <div class="sel-actions">
+        <button class="btn btn-sm btn-ghost" onclick="cancelarSelecao()">Cancelar</button>
+        <button class="btn btn-sm btn-red" onclick="confirmarDelete()">🗑 Excluir</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="filters" id="filters"></div>
+      <button class="btn btn-dark btn-sm" onclick="toggleForm()">+ Nova OS</button>
+    </div>
+
+    <div class="form-panel" id="form-panel">
+      <h3>Nova ordem de serviço</h3>
+      <div class="field"><label>Cliente *</label><input type="text" id="f-cliente" placeholder="Nome do cliente" autocomplete="name"></div>
+      <div class="form-grid">
+        <div class="field"><label>WhatsApp</label><input type="tel" id="f-tel" placeholder="51999999999"></div>
+        <div class="field"><label>Técnico</label><input type="text" id="f-tec" placeholder="Nome"></div>
+      </div>
+      <div class="field"><label>Descrição do serviço *</label><textarea id="f-desc" placeholder="Descreva o serviço..."></textarea></div>
+      <div class="form-grid">
+        <div class="field"><label>Data prevista</label><input type="date" id="f-data"></div>
+        <div class="field"><label>Valor orçado (R$)</label><input type="number" id="f-valor" placeholder="0" min="0" step="0.01"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-dark" onclick="salvarOS()">Salvar OS</button>
+        <button class="btn btn-ghost" onclick="toggleForm()">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="sel-hint" style="display:none;font-size:12px;color:var(--text3);text-align:center;margin-bottom:.5rem">Toque nas OS para selecioná-las</div>
+    <div class="os-list" id="os-list"></div>
+
+    <div style="text-align:center;margin-top:.5rem">
+      <button class="btn btn-ghost btn-sm" id="btn-sel-mode" onclick="toggleSelMode()">☑ Selecionar para excluir</button>
+    </div>
+  </div>
+
+  <!-- PAGE REL OS -->
+  <div class="page" id="page-rel-os">
+    <div class="rel-header">
+      <div class="rel-title">Relatório de OS</div>
+      <div class="rel-controls">
+        <select class="mes-select" id="mes-sel-os" onchange="renderRelOS()"></select>
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">PDF</button>
+      </div>
+    </div>
+    <div id="rel-os-content"></div>
+  </div>
+
+  <!-- PAGE REL MAT -->
+  <div class="page" id="page-rel-mat">
+    <div class="rel-header">
+      <div class="rel-title">Relatório de Materiais</div>
+      <div class="rel-controls">
+        <select class="mes-select" id="mes-sel-mat" onchange="renderRelMat()"></select>
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">PDF</button>
+      </div>
+    </div>
+    <div id="rel-mat-content"></div>
+  </div>
+
+  <!-- PAGE RECEBIMENTOS -->
+  <div class="page" id="page-recebimentos">
+    <div class="rel-header">
+      <div class="rel-title">Relatório de Recebimentos</div>
+      <div class="rel-controls">
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Imprimir</button>
+      </div>
+    </div>
+
+    <!-- Filtros de período -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:1rem;margin-bottom:1rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.75rem;font-family:'IBM Plex Mono',monospace">Período</div>
+      <div style="display:flex;gap:8px;margin-bottom:.75rem;flex-wrap:wrap">
+        <button class="filter-btn active" id="rbtn-mes" onclick="setFiltroReceb('mes')">Por mês</button>
+        <button class="filter-btn" id="rbtn-livre" onclick="setFiltroReceb('livre')">Datas livres</button>
+      </div>
+      <div id="receb-filtro-mes" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="mes-select" id="mes-sel-receb" onchange="renderRecebimentos()" style="min-width:130px"></select>
+      </div>
+      <div id="receb-filtro-livre" style="display:none;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="font-size:12px;color:var(--text2)">De:</label>
+          <input type="date" id="receb-data-ini" onchange="renderRecebimentos()"
+            style="font-size:14px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:38px;outline:none">
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="font-size:12px;color:var(--text2)">Até:</label>
+          <input type="date" id="receb-data-fim" onchange="renderRecebimentos()"
+            style="font-size:14px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:38px;outline:none">
+        </div>
+        <button class="btn btn-dark btn-sm" onclick="renderRecebimentos()">Consultar</button>
+      </div>
+    </div>
+
+    <div id="receb-content"></div>
+  </div>
+
+  <!-- PAGE RECEBIMENTOS -->
+  <div class="page" id="page-recebimentos">
+    <div class="rel-header">
+      <div class="rel-title">Relatório de Recebimentos</div>
+      <div class="rel-controls">
+        <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Imprimir</button>
+      </div>
+    </div>
+
+    <!-- Filtros de período -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:1rem;margin-bottom:1rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.75rem;font-family:'IBM Plex Mono',monospace">Período</div>
+      <div style="display:flex;gap:8px;margin-bottom:.75rem;flex-wrap:wrap">
+        <button class="filter-btn active" id="rbtn-mes" onclick="setFiltroReceb('mes')">Por mês</button>
+        <button class="filter-btn" id="rbtn-livre" onclick="setFiltroReceb('livre')">Datas livres</button>
+      </div>
+      <div id="receb-filtro-mes" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="mes-select" id="mes-sel-receb" onchange="renderRecebimentos()" style="min-width:130px"></select>
+      </div>
+      <div id="receb-filtro-livre" style="display:none;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="font-size:12px;color:var(--text2)">De:</label>
+          <input type="date" id="receb-data-ini" onchange="renderRecebimentos()"
+            style="font-size:14px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:38px;outline:none">
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="font-size:12px;color:var(--text2)">Até:</label>
+          <input type="date" id="receb-data-fim" onchange="renderRecebimentos()"
+            style="font-size:14px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:38px;outline:none">
+        </div>
+        <button class="btn btn-dark btn-sm" onclick="renderRecebimentos()">Consultar</button>
+      </div>
+    </div>
+
+    <div id="receb-content"></div>
+  </div>
+
+</div>
+
+<!-- MODAL OS -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)fecharModal()">
+  <div class="modal" id="modal-content"><span class="modal-handle"></span></div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Confirmar exclusão</h3>
+    <p id="confirm-msg"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-red" id="confirm-ok">Excluir</button>
+      <button class="btn btn-ghost" onclick="fecharConfirm()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CORREÇÃO DOS 3 BUGS:
+// Todas as funções ficam no escopo global (window).
+// O bloco Firebase type="module" vai APENAS chamar
+// window.fbSalvarOS, window.fbDelete, etc.
+// Não tenta redefinir as funções de UI.
+// ═══════════════════════════════════════════════════════
+
+// ── DADOS ────────────────────────────────────────────────
+const EMP_KEY  = 'sf3_empresa';
+const OS_KEY   = 'sf3_ordens';
+const CACHE_KEY= 'sf3_cache';
+const CACHE_TTL= 5 * 60 * 1000; // 5 minutos
+
+// Data local do dispositivo no formato YYYY-MM-DD
+// Usa horário local, não UTC — evita bug de fuso horário (ex: Brasil UTC-3)
+function dataHoje(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
+}
+
+// Mês atual local no formato YYYY-MM
+function mesHoje(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  return y+'-'+m;
+}
+
+let empresa = localStorage.getItem(EMP_KEY) || '';
+
+// Dados de exemplo para primeiro acesso
+const EXEMPLO = [
+  {id:'OS-001',cliente:'Mecânica do João',tel:'54991234567',desc:'Revisão sistema elétrico caminhão Ford F-250',tec:'Carlos',data:'2026-04-10',valor:1170,status:'concluida',dataConclusao:'2026-04-12',servicosExecutados:'Troca do alternador, revisão da bateria e limpeza dos cabos.',maoDeObra:500,materiais:[{nome:'Alternador 24V',qtd:'1',valor:'320'},{nome:'Cabo elétrico 6mm',qtd:'3',valor:'15'},{nome:'Terminal bateria',qtd:'2',valor:'12'}],criadoEm:'2026-04-10T08:00:00.000Z'},
+  {id:'OS-002',cliente:'Supermercado Becker',tel:'54987654321',desc:'Manutenção preventiva câmaras frias',tec:'Marcos',data:'2026-04-30',valor:1200,status:'aberta',dataConclusao:'',servicosExecutados:'',maoDeObra:0,materiais:[],criadoEm:'2026-04-09T08:00:00.000Z'},
+  {id:'OS-003',cliente:'Agropecuária Souza',tel:'54994567890',desc:'Instalação sistema de irrigação — 3 hectares',tec:'Carlos',data:'2026-04-20',valor:2700,status:'concluida',dataConclusao:'2026-04-22',servicosExecutados:'Instalação de aspersores, tubulação e painel automático.',maoDeObra:700,materiais:[{nome:'Aspersor irrigação',qtd:'12',valor:'45'},{nome:'Tubo PVC 50mm',qtd:'80',valor:'8'},{nome:'Painel controle',qtd:'1',valor:'680'}],criadoEm:'2026-04-08T08:00:00.000Z'},
+  {id:'OS-004',cliente:'Eletrônica Central',tel:'54993216543',desc:'Reparo TV 55" Samsung — sem imagem',tec:'Pedro',data:'2026-04-15',valor:380,status:'andamento',dataConclusao:'',servicosExecutados:'',maoDeObra:0,materiais:[],criadoEm:'2026-04-07T08:00:00.000Z'},
+  {id:'OS-005',cliente:'Funilaria Expresso',tel:'54991112233',desc:'Funilaria e pintura — parachoque dianteiro',tec:'Marcos',data:'2026-05-05',valor:950,status:'aberta',dataConclusao:'',servicosExecutados:'',maoDeObra:0,materiais:[],criadoEm:'2026-04-06T08:00:00.000Z'},
+  {id:'OS-006',cliente:'Refrigeração Norte',tel:'54992223344',desc:'Instalação ar condicionado split 12.000 BTU',tec:'Carlos',data:'2026-04-28',valor:842,status:'concluida',dataConclusao:'2026-04-29',servicosExecutados:'Instalação do split, cabeamento e teste.',maoDeObra:550,materiais:[{nome:'Suporte fixação',qtd:'1',valor:'85'},{nome:'Cabo elétrico 4mm',qtd:'8',valor:'12'},{nome:'Gás R-410A',qtd:'1',valor:'95'}],criadoEm:'2026-04-05T08:00:00.000Z'},
+];
+
+// Array global de ordens — Firebase vai popular isso
+window.ordens = JSON.parse(localStorage.getItem(OS_KEY) || 'null') || EXEMPLO;
+
+let filtro    = 'todas';
+let modoSel   = false;
+let selecionadas = new Set();
+let materiaisTemp = [];
+let msgTemplate = 'Olá, {cliente}! 😊\n\nAqui é *{empresa}*.\n\nInformamos que o serviço *{servico}* ({os}) foi concluído e está pronto!\n\nValor: *{valor}*\n\nQualquer dúvida, estamos à disposição. Obrigado pela confiança! 🙏';
+
+// ── CACHE ────────────────────────────────────────────────
+function lerCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, dados } = JSON.parse(raw);
+    if (Date.now() - ts < CACHE_TTL) return dados;
+  } catch(e) {}
+  return null;
+}
+function salvarCache(dados) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), dados })); } catch(e){}
+}
+function invalidarCache() { localStorage.removeItem(CACHE_KEY); }
+
+// ── LOADING ──────────────────────────────────────────────
+function setLoading(on) {
+  document.getElementById('loading-bar').classList.toggle('show', on);
+}
+
+// ── UTILS ────────────────────────────────────────────────
+function fmt(d){ if(!d)return'—'; const p=d.split('-'); return`${p[2]}/${p[1]}/${p[0]}`; }
+function fmtM(v){ return'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0}); }
+function badge(s){ const l={aberta:'Aberta',andamento:'Em andamento',concluida:'Concluída',cancelada:'Cancelada'}; return`<span class="badge badge-${s}">${l[s]||s}</span>`; }
+function getMesAno(d){ if(!d)return''; const p=d.split('-'); return`${p[0]}-${p[1]}`; }
+function labelMes(ma){ if(!ma)return''; const[y,m]=ma.split('-'); const ms=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return`${ms[parseInt(m)-1]}/${y}`; }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function montarMsg(o,tpl){ return(tpl||msgTemplate).replace('{empresa}',empresa||'Nossa Empresa').replace('{cliente}',o.cliente).replace('{servico}',o.desc).replace('{os}',o.id).replace('{valor}',fmtM(o.valor)); }
+function totalMateriais(mats){ return(mats||[]).reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0); }
+
+function proximoId(){
+  if(!window.ordens.length) return 'OS-001';
+  const nums = window.ordens.map(o=>{ const m=o.id.match(/(\d+)$/); return m?parseInt(m[1]):0; });
+  return 'OS-'+String(Math.max(...nums)+1).padStart(3,'0');
+}
+
+// ── EMPRESA ──────────────────────────────────────────────
+function salvarEmpresa(){
+  const v=document.getElementById('emp-input').value.trim(); if(!v)return;
+  empresa=v; localStorage.setItem(EMP_KEY,empresa);
+  document.getElementById('emp-btn').textContent=empresa;
+  document.getElementById('setup-bar').style.display='none';
+  toast('Empresa salva!');
+}
+function editarEmpresa(){
+  document.getElementById('setup-bar').style.display='block';
+  document.getElementById('emp-input').value=empresa;
+  document.getElementById('emp-input').focus();
+}
+
+// ── NAV ──────────────────────────────────────────────────
+function setPage(p){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+p);
+  if(pageEl) pageEl.classList.add('active');
+  // Mapa inclui todas as abas — erro de undefined quebrava o JS inteiro
+  const idx={os:0,'rel-os':1,'rel-mat':2,'recebimentos':3}[p];
+  const tabs = document.querySelectorAll('.nav-tab');
+  if(idx !== undefined && tabs[idx]) tabs[idx].classList.add('active');
+  if(p==='rel-os'){popularMeses('mes-sel-os');renderRelOS();}
+  if(p==='rel-mat'){popularMeses('mes-sel-mat');renderRelMat();}
+  if(p==='recebimentos'){initRecebimentos();}
+}
+
+// ── MÉTRICAS ─────────────────────────────────────────────
+function renderMetrics(){
+  const ab  = window.ordens.filter(o=>o.status==='aberta').length;
+  const and = window.ordens.filter(o=>o.status==='andamento').length;
+  const conc= window.ordens.filter(o=>o.status==='concluida').length;
+  const total = window.ordens.filter(o=>o.status!=='cancelada').reduce((a,o)=>a+Number(o.valor||0),0);
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Abertas</div><div class="metric-val m-blue">${ab}</div></div>
+    <div class="metric"><div class="metric-label">Em andamento</div><div class="metric-val m-amber">${and}</div></div>
+    <div class="metric"><div class="metric-label">Concluídas</div><div class="metric-val m-green">${conc}</div></div>
+    <div class="metric"><div class="metric-label">Total faturado</div><div class="metric-val">${fmtM(total)}</div></div>
+  `;
+}
+
+// ── FILTROS E LISTA ──────────────────────────────────────
+function renderFilters(){
+  const opts=[{k:'todas',l:'Todas'},{k:'aberta',l:'Abertas'},{k:'andamento',l:'Em andamento'},{k:'concluida',l:'Concluídas'},{k:'cancelada',l:'Canceladas'}];
+  document.getElementById('filters').innerHTML=opts.map(o=>`<button class="filter-btn${filtro===o.k?' active':''}" onclick="setFiltro('${o.k}')">${o.l}</button>`).join('');
+}
+function setFiltro(f){filtro=f;renderFilters();renderLista();}
+
+function renderLista(){
+  const lista=filtro==='todas'?window.ordens:window.ordens.filter(o=>o.status===filtro);
+  const el=document.getElementById('os-list');
+  if(!lista.length){el.innerHTML='<div class="empty">Nenhuma ordem encontrada.</div>';return;}
+  el.innerHTML=lista.map(o=>{
+    const sel=selecionadas.has(o.id);
+    return`<div class="os-card${o.status==='concluida'?' concluida':''}${sel?' selecionada':''}" onclick="cardClick('${o.id}')">
+      <div class="os-card-top">
+        <div class="os-card-left">
+          <div class="os-num">${o.id}</div>
+          <div class="os-cliente">${o.cliente}</div>
+          <div class="os-desc">${o.desc}</div>
+          <div class="os-meta">${o.tec||''}${o.data?' · Prev: '+fmt(o.data):''}${o.dataConclusao?' · Conc: '+fmt(o.dataConclusao):''}</div>
+        </div>
+        <div class="os-card-right">
+          ${modoSel
+            ? `<div class="checkbox-os${sel?' checked':''}"></div>`
+            : `${badge(o.status)}<div class="os-valor">${fmtM(o.valor)}</div>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── MODO SELEÇÃO ─────────────────────────────────────────
+function toggleSelMode(){
+  modoSel=!modoSel;
+  selecionadas.clear();
+  document.getElementById('sel-bar').classList.toggle('show',modoSel);
+  document.getElementById('sel-hint').style.display=modoSel?'block':'none';
+  document.getElementById('btn-sel-mode').textContent=modoSel?'✕ Cancelar seleção':'☑ Selecionar para excluir';
+  atualizarSelBar();
+  renderLista();
+}
+function cancelarSelecao(){
+  modoSel=false; selecionadas.clear();
+  document.getElementById('sel-bar').classList.remove('show');
+  document.getElementById('sel-hint').style.display='none';
+  document.getElementById('btn-sel-mode').textContent='☑ Selecionar para excluir';
+  renderLista();
+}
+function atualizarSelBar(){
+  document.getElementById('sel-info').textContent=`${selecionadas.size} OS selecionada${selecionadas.size!==1?'s':''}`;
+}
+
+function cardClick(id){
+  if(modoSel){
+    if(selecionadas.has(id)) selecionadas.delete(id); else selecionadas.add(id);
+    atualizarSelBar();
+    renderLista();
+  } else {
+    abrirModal(id);
+  }
+}
+
+// ── DELETE ───────────────────────────────────────────────
+function confirmarDelete(){
+  if(!selecionadas.size){ toast('Selecione ao menos uma OS.'); return; }
+  const qtd=selecionadas.size;
+  document.getElementById('confirm-title').textContent='Excluir '+qtd+' OS';
+  document.getElementById('confirm-msg').textContent=`Você está prestes a excluir ${qtd} ordem${qtd!==1?'ns':''} de serviço. Esta ação não pode ser desfeita.`;
+  // BUG 1 CORRIGIDO: chama executarDelete que agora é sempre window.executarDelete
+  document.getElementById('confirm-ok').onclick = () => {
+    executarDelete([...selecionadas]);
+    fecharConfirm();
+  };
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function confirmarDeleteUnico(id){
+  const o=window.ordens.find(x=>x.id===id); if(!o)return;
+  document.getElementById('confirm-title').textContent='Excluir OS';
+  document.getElementById('confirm-msg').textContent=`Excluir a OS "${o.id} — ${o.cliente}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('confirm-ok').onclick = () => {
+    executarDelete([id]);
+    fecharModal();
+    fecharConfirm();
+  };
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+// BUG 1 CORRIGIDO: executarDelete local (fallback se Firebase não conectou)
+// O Firebase vai sobrescrever esta função com a versão que usa Firestore
+function executarDelete(ids){
+  window.ordens = window.ordens.filter(o => !ids.includes(o.id));
+  localStorage.setItem(OS_KEY, JSON.stringify(window.ordens));
+  invalidarCache();
+  cancelarSelecao();
+  renderAll();
+  toast(`${ids.length} OS excluída${ids.length!==1?'s':''}.`);
+}
+
+function fecharConfirm(){ document.getElementById('confirm-overlay').classList.remove('open'); }
+
+// ── FORM NOVA OS ─────────────────────────────────────────
+function toggleForm(){
+  const p=document.getElementById('form-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')){
+    document.getElementById('f-data').value=dataHoje();
+    setTimeout(()=>document.getElementById('f-cliente').focus(),100);
+  }
+}
+
+// Versão local (fallback) — Firebase sobrescreve
+function salvarOS(){
+  const cliente=document.getElementById('f-cliente').value.trim();
+  const desc=document.getElementById('f-desc').value.trim();
+  if(!cliente||!desc){ toast('Preencha cliente e descrição.'); return; }
+  const novaOS = {
+    id:proximoId(), cliente,
+    tel:document.getElementById('f-tel').value.replace(/\D/g,''),
+    desc, tec:document.getElementById('f-tec').value.trim()||'—',
+    data:document.getElementById('f-data').value,
+    valor:parseFloat(document.getElementById('f-valor').value)||0,
+    status:'aberta', dataConclusao:'', servicosExecutados:'', maoDeObra:0, materiais:[],
+    criadoEm: new Date().toISOString()
+  };
+  window.ordens.unshift(novaOS);
+  localStorage.setItem(OS_KEY, JSON.stringify(window.ordens));
+  invalidarCache();
+  ['f-cliente','f-tel','f-desc','f-tec','f-valor'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('form-panel').classList.remove('open');
+  renderAll();
+  toast('OS criada!');
+}
+
+// ── MODAL ────────────────────────────────────────────────
+function abrirModal(id){
+  const o=window.ordens.find(x=>x.id===id); if(!o)return;
+  materiaisTemp=JSON.parse(JSON.stringify(o.materiais||[]));
+
+  const temTel=o.tel&&o.tel.replace(/\D/g,'').length>=8;
+
+  // BUG 2 CORRIGIDO: mostra form de conclusão para aberta E andamento
+  const mostrarConclusao = (o.status==='andamento'||o.status==='aberta');
+
+  const totalMat=totalMateriais(o.materiais);
+  const matTabela=o.materiais&&o.materiais.length?`
+    <div style="margin-top:.5rem">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:5px">Materiais utilizados:</div>
+      <table class="mat-table">
+        <tr><th>Material</th><th>Qtd</th><th>Vl.Un</th><th>Total</th></tr>
+        ${o.materiais.map(m=>`<tr><td>${m.nome}</td><td>${m.qtd}</td><td>${fmtM(m.valor)}</td><td>${fmtM(parseFloat(m.qtd||0)*parseFloat(m.valor||0))}</td></tr>`).join('')}
+        <tr class="total-tr"><td colspan="3">Total materiais</td><td>${fmtM(totalMat)}</td></tr>
+      </table>
+    </div>`:'';
+
+  const conclusaoForm=mostrarConclusao?`
+    <div class="conclusao-form">
+      <div class="conclusao-title">📋 Registro de conclusão</div>
+      <div class="field"><label>Serviços executados</label><textarea id="srv-${id}" placeholder="Detalhe os serviços realizados...">${o.servicosExecutados||''}</textarea></div>
+      <div class="form-divider">Materiais utilizados</div>
+      <div style="display:grid;grid-template-columns:1fr 72px 80px 36px;gap:6px;margin-bottom:4px">
+        <span style="font-size:10px;color:var(--blue);opacity:.7;text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace">Material/Peça</span>
+        <span style="font-size:10px;color:var(--blue);opacity:.7;text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace">Qtd</span>
+        <span style="font-size:10px;color:var(--blue);opacity:.7;text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace">R$ unit</span>
+        <span></span>
+      </div>
+      <div id="mat-list-${id}"></div>
+      <button class="btn-add-mat" onclick="addMat('${id}')">+ Adicionar material</button>
+      <div class="total-row-conclusao">
+        <div class="total-box">
+          <div class="total-box-label">Mão de obra (R$)</div>
+          <input type="number" style="font-size:15px;padding:6px 8px;border:1px solid var(--blue-bd);border-radius:var(--r);background:#fff;color:var(--text);width:100%;min-height:40px" id="mdo-${id}" placeholder="0.00" min="0" step="0.01" value="${o.maoDeObra||''}" oninput="atualizarTotal('${id}')">
+        </div>
+        <div class="total-box">
+          <div class="total-box-label">Total (mat. + M.O.)</div>
+          <div class="total-box-val" id="total-conclusao-${id}">${fmtM(o.valor||0)}</div>
+        </div>
+      </div>
+      <button class="btn btn-dark" onclick="salvarConclusao('${id}')" style="width:100%;justify-content:center">💾 Salvar e atualizar valor</button>
+    </div>`:'';
+
+  // BUG 3 CORRIGIDO: bloco WhatsApp aparece quando status === 'concluida'
+  const wppBlock = o.status==='concluida' ? `
+    <div class="wpp-block">
+      <div class="wpp-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="#166534"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Notificação — ${empresa||'sua empresa'}
+      </div>
+      <div class="wpp-preview" id="prev-${id}">${montarMsg(o).replace(/\n/g,'<br>')}</div>
+      <label class="wpp-label">Editar mensagem · {empresa} {cliente} {servico} {os} {valor}</label>
+      <textarea class="wpp-textarea" id="tpl-${id}" oninput="atualizarPreview('${id}')">${msgTemplate}</textarea>
+      <div class="wpp-hint">${temTel?'📱 +55 '+o.tel:'⚠ Sem telefone cadastrado.'}</div>
+      <button class="btn-wpp" onclick="abrirWpp('${id}')" ${!temTel?'disabled':''}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Enviar notificação WhatsApp
+      </button>
+    </div>`
+  : `<div class="pending-block">O botão WhatsApp aparece quando o status for <strong>Concluída</strong>.</div>`;
+
+  document.getElementById('modal-content').innerHTML=`
+    <span class="modal-handle"></span>
+    <div class="modal-hdr">
+      <div><div class="modal-id">${o.id}</div><div class="modal-cliente">${o.cliente}</div></div>
+      <button class="close-btn" onclick="fecharModal()">×</button>
+    </div>
+    <!-- Modo visualização -->
+    <div id="view-mode-${id}">
+      <div class="detail-row"><span class="detail-key">WhatsApp</span><span class="detail-val">${o.tel?'+55 '+o.tel:'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Serviço</span><span class="detail-val" style="max-width:58%">${o.desc}</span></div>
+      <div class="detail-row"><span class="detail-key">Técnico</span><span class="detail-val">${o.tec||'—'}</span></div>
+      <div class="detail-row"><span class="detail-key">Data prevista</span><span class="detail-val">${fmt(o.data)}</span></div>
+      ${o.dataConclusao?`<div class="detail-row"><span class="detail-key">Concluído em</span><span class="detail-val">${fmt(o.dataConclusao)}</span></div>`:''}
+      <div class="detail-row"><span class="detail-key">Valor orçado</span><span class="detail-val">${fmtM(o.valor)}</span></div>
+      <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">${badge(o.status)}</span></div>
+      ${o.servicosExecutados?`<div class="detail-row" style="flex-direction:column;gap:5px"><span class="detail-key">Serviços executados</span><span class="detail-val full">${o.servicosExecutados}</span></div>`:''}
+      ${matTabela}
+      <div style="margin-top:.75rem">
+        <button class="btn-edit" onclick="ativarEdicaoOS('${id}')">✏ Editar dados da OS</button>
+      </div>
+    </div>
+
+    <!-- Modo edição (oculto inicialmente) -->
+    <div id="edit-mode-${id}" style="display:none">
+      <div style="font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;font-family:'IBM Plex Mono',monospace;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:2px solid var(--blue-bd)">
+        ✏ Editando OS ${id}
+      </div>
+      <div class="edit-field">
+        <label>Cliente *</label>
+        <input type="text" id="ed-cliente-${id}" value="${o.cliente}" placeholder="Nome do cliente">
+      </div>
+      <div class="edit-field">
+        <label>WhatsApp</label>
+        <input type="tel" id="ed-tel-${id}" value="${o.tel||''}" placeholder="51999999999">
+      </div>
+      <div class="edit-field">
+        <label>Descrição do serviço *</label>
+        <textarea id="ed-desc-${id}">${o.desc}</textarea>
+      </div>
+      <div class="edit-field">
+        <label>Técnico</label>
+        <input type="text" id="ed-tec-${id}" value="${o.tec||''}" placeholder="Nome do técnico">
+      </div>
+      <div class="edit-field">
+        <label>Data prevista</label>
+        <input type="date" id="ed-data-${id}" value="${o.data||''}">
+      </div>
+      <div class="edit-field">
+        <label>Valor orçado (R$)</label>
+        <input type="number" id="ed-valor-${id}" value="${o.valor||0}" min="0" step="0.01">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:1rem">
+        <button class="btn-save-edit" onclick="salvarEdicaoOS('${id}')">💾 Salvar alterações</button>
+        <button class="btn-cancel-edit" onclick="cancelarEdicaoOS('${id}')">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- BUG 2 CORRIGIDO: select de status com onchange direto -->
+    <div class="status-changer">
+      <label>Alterar status</label>
+      <select id="status-select-${id}" onchange="alterarStatus('${id}', this.value)">
+        <option value="aberta"     ${o.status==='aberta'    ?'selected':''}>Aberta</option>
+        <option value="andamento"  ${o.status==='andamento' ?'selected':''}>Em andamento</option>
+        <option value="concluida"  ${o.status==='concluida' ?'selected':''}>Concluída</option>
+        <option value="cancelada"  ${o.status==='cancelada' ?'selected':''}>Cancelada</option>
+      </select>
+    </div>
+
+    ${conclusaoForm}
+    ${wppBlock}
+
+    <div style="margin-top:1rem;display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="fecharModal()">Fechar</button>
+      <button class="btn btn-red btn-sm" onclick="confirmarDeleteUnico('${o.id}')">🗑 Excluir OS</button>
+    </div>
+  `;
+  document.getElementById('modal-overlay').classList.add('open');
+  renderMats(id);
+  // Adiciona seção de pagamento ao modal
+  const pagContainer = document.createElement('div');
+  pagContainer.style.cssText = 'margin-top:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:1rem';
+  pagContainer.innerHTML = '<div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.9rem;font-family:\'IBM Plex Mono\',monospace;display:flex;align-items:center;gap:6px"><span style=\"font-size:16px\">💰</span> Pagamento</div><div id="pag-modal-'+id+'"></div>';
+  // Insere antes dos botões do rodapé
+  const modalEl = document.getElementById('modal-content');
+  const lastDiv = modalEl.querySelector('div[style*="margin-top:1rem;display:flex"]');
+  if(lastDiv) modalEl.insertBefore(pagContainer, lastDiv);
+  renderPagamentoModal(id);
+}
+
+// ── EDIÇÃO DE OS ─────────────────────────────────────────
+function ativarEdicaoOS(id){
+  document.getElementById('view-mode-'+id).style.display = 'none';
+  document.getElementById('edit-mode-'+id).style.display = 'block';
+  // Foca no campo cliente
+  setTimeout(()=>{ const el=document.getElementById('ed-cliente-'+id); if(el) el.focus(); }, 100);
+}
+
+function cancelarEdicaoOS(id){
+  document.getElementById('edit-mode-'+id).style.display = 'none';
+  document.getElementById('view-mode-'+id).style.display = 'block';
+}
+
+function salvarEdicaoOS(id){
+  const o = window.ordens.find(x=>x.id===id); if(!o) return;
+
+  const cliente = document.getElementById('ed-cliente-'+id)?.value.trim();
+  const desc    = document.getElementById('ed-desc-'+id)?.value.trim();
+  if(!cliente || !desc){ toast('Preencha cliente e descrição.'); return; }
+
+  o.cliente = cliente;
+  o.tel     = (document.getElementById('ed-tel-'+id)?.value || '').replace(/\D/g,'');
+  o.desc    = desc;
+  o.tec     = document.getElementById('ed-tec-'+id)?.value.trim() || '—';
+  o.data    = document.getElementById('ed-data-'+id)?.value || '';
+  o.valor   = parseFloat(document.getElementById('ed-valor-'+id)?.value) || 0;
+
+  localStorage.setItem('sf3_ordens', JSON.stringify(window.ordens));
+  if(window.invalidarCache) window.invalidarCache();
+  renderAll();
+  fecharModal();
+  abrirModal(id);
+  toast('OS atualizada!');
+}
+// ── FIM EDIÇÃO DE OS ──────────────────────────────────────
+
+function fecharModal(){
+  // Com onchange em cada campo, dados já estão salvos — só fecha
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ── MATERIAIS NO MODAL ───────────────────────────────────
+function renderMats(id){
+  const el=document.getElementById('mat-list-'+id); if(!el)return;
+  el.innerHTML=materiaisTemp.map((m,i)=>`
+    <div class="mat-row">
+      <input type="text" placeholder="Ex: Alternador" value="${m.nome||''}" oninput="materiaisTemp[${i}].nome=this.value;atualizarTotal('${id}')">
+      <input type="number" placeholder="Qtd" value="${m.qtd||''}" min="0" step="0.01" oninput="materiaisTemp[${i}].qtd=this.value;atualizarTotal('${id}')">
+      <input type="number" placeholder="R$ unit" value="${m.valor||''}" min="0" step="0.01" oninput="materiaisTemp[${i}].valor=this.value;atualizarTotal('${id}')">
+      <button class="btn-rem" onclick="remMat(${i},'${id}')">×</button>
+    </div>
+  `).join('');
+  atualizarTotal(id);
+}
+function addMat(id){ materiaisTemp.push({nome:'',qtd:'1',valor:''}); renderMats(id); }
+function remMat(i,id){ materiaisTemp.splice(i,1); renderMats(id); }
+
+function atualizarTotal(id){
+  const tMat=materiaisTemp.reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);
+  const mdo=document.getElementById('mdo-'+id);
+  const vMdo=mdo?parseFloat(mdo.value||0):0;
+  const el=document.getElementById('total-conclusao-'+id);
+  if(el) el.textContent=fmtM(tMat+vMdo);
+}
+
+// Versão local de salvarConclusao (Firebase vai sobrescrever)
+function salvarConclusao(id){
+  const o=window.ordens.find(x=>x.id===id); if(!o)return;
+  const rows=document.querySelectorAll(`#mat-list-${id} .mat-row`);
+  rows.forEach((row,i)=>{
+    const inp=row.querySelectorAll('input');
+    if(materiaisTemp[i]){
+      materiaisTemp[i].nome =inp[0]?inp[0].value.trim():'';
+      materiaisTemp[i].qtd  =inp[1]?inp[1].value:'0';
+      materiaisTemp[i].valor=inp[2]?inp[2].value:'0';
+    }
+  });
+  const srv=document.getElementById('srv-'+id);
+  o.servicosExecutados=srv?srv.value.trim():'';
+  o.materiais=materiaisTemp.filter(m=>m.nome.trim());
+  const tMat=totalMateriais(o.materiais);
+  const mdo=document.getElementById('mdo-'+id);
+  const vMdo=mdo?parseFloat(mdo.value||0):0;
+  o.maoDeObra=vMdo;
+  if(tMat>0||vMdo>0) o.valor=Math.round((tMat+vMdo)*100)/100;
+  localStorage.setItem(OS_KEY, JSON.stringify(window.ordens));
+  invalidarCache();
+  renderAll(); fecharModal();
+  toast('Salvo! Valor: '+fmtM(o.valor));
+}
+
+function atualizarPreview(id){
+  const o=window.ordens.find(x=>x.id===id);
+  const tpl=document.getElementById('tpl-'+id);
+  const prev=document.getElementById('prev-'+id);
+  if(o&&tpl&&prev) prev.innerHTML=montarMsg(o,tpl.value).replace(/\n/g,'<br>');
+}
+
+function abrirWpp(id){
+  const o=window.ordens.find(x=>x.id===id); if(!o)return;
+  const tpl=document.getElementById('tpl-'+id);
+  window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(montarMsg(o,tpl?tpl.value:null))}`,'_blank');
+  toast('WhatsApp aberto!');
+}
+
+// BUG 2 CORRIGIDO: alterarStatus local — atualiza dados E reabre modal
+function alterarStatus(id, s){
+  const o=window.ordens.find(x=>x.id===id); if(!o)return;
+  o.status=s;
+  if(s==='concluida'&&!o.dataConclusao) o.dataConclusao=dataHoje();
+  localStorage.setItem(OS_KEY, JSON.stringify(window.ordens));
+  invalidarCache();
+  renderAll();
+  fecharModal();
+  // BUG 3 CORRIGIDO: reabre o modal após a mudança para exibir bloco WhatsApp
+  setTimeout(()=>abrirModal(id), 150);
+}
+
+// ── RELATÓRIO OS ─────────────────────────────────────────
+function popularMeses(selId){
+  // Inclui meses de criadoEm (abertura real), data prevista e conclusão
+  const todos=[...new Set(window.ordens.flatMap(o=>[
+    o.criadoEm ? o.criadoEm.slice(0,7) : getMesAno(o.data),
+    getMesAno(o.dataConclusao)
+  ]).filter(Boolean))].sort().reverse();
+  const hoje=mesHoje();
+  if(!todos.includes(hoje)) todos.unshift(hoje);
+  const sel=document.getElementById(selId);
+  if(!sel) return;
+  sel.innerHTML=todos.map(m=>`<option value="${m}">${labelMes(m)}</option>`).join('');
+}
+
+
+// Helper: mês/ano de abertura real da OS
+// Usa criadoEm (data real de criação) — nunca o.data (data prevista)
+// Fallback para o.data apenas se criadoEm não existir (OS antigas)
+function getMesAnoAbertura(o){
+  if(o.criadoEm){
+    // criadoEm é ISO string: '2026-04-10T08:00:00.000Z'
+    return o.criadoEm.slice(0,7); // '2026-04'
+  }
+  // Fallback apenas para compatibilidade com OS sem criadoEm
+  return getMesAno(o.data);
+}
+
+function renderRelOS(){
+  const mes = document.getElementById('mes-sel-os').value;
+  const el  = document.getElementById('rel-os-content');
+
+  // ── GRUPOS COM CRITÉRIOS INDEPENDENTES ─────────────────
+  //
+  // 1. ABERTAS NO MÊS: criadas neste mês (independente do status atual)
+  //    Critério: getMesAno(o.data) === mes
+  //
+  // 2. EM ANDAMENTO NO MÊS: criadas antes ou durante o mês,
+  //    ainda sem conclusão no mês (status andamento ou aberta)
+  //    Critério: getMesAno(o.data) <= mes && status não concluída
+  //
+  // 3. CONCLUÍDAS NO MÊS: encerradas neste mês
+  //    Critério: getMesAno(o.dataConclusao) === mes
+  //
+  // 4. CANCELADAS NO MÊS: canceladas com data de criação neste mês
+  //    Critério: getMesAno(o.data) === mes && status cancelada
+  //
+  // Cada OS pode aparecer em mais de um grupo (ex: aberta e concluída
+  // no mesmo mês), o que é correto e esperado.
+
+  // ABERTAS NO MÊS: criadas neste mês (usa criadoEm = data real de criação)
+  const abertas = window.ordens.filter(o =>
+    getMesAnoAbertura(o) === mes && o.status !== 'cancelada'
+  );
+
+  // EM ANDAMENTO: status andamento/aberta, criadas até o mês selecionado
+  const andamento = window.ordens.filter(o =>
+    (o.status === 'andamento' || o.status === 'aberta') &&
+    getMesAnoAbertura(o) <= mes
+  );
+
+  // CONCLUÍDAS NO MÊS: usa dataConclusao (data real de encerramento)
+  const concluidas = window.ordens.filter(o =>
+    o.status === 'concluida' && getMesAno(o.dataConclusao) === mes
+  );
+
+  // CANCELADAS NO MÊS: criadas neste mês e canceladas
+  const canceladas = window.ordens.filter(o =>
+    o.status === 'cancelada' && getMesAnoAbertura(o) === mes
+  );
+
+  // ── TOTALIZADORES ──────────────────────────────────────
+  const fatConc   = concluidas.reduce((a,o) => a+Number(o.valor||0), 0);
+  const valAbert  = abertas.reduce((a,o) => a+Number(o.valor||0), 0);
+  const ticketMed = concluidas.length ? fatConc/concluidas.length : 0;
+
+  // ── CARD DE OS ITEM ────────────────────────────────────
+  const cardOS = (o, destaque) => `
+    <div class="rel-os-item">
+      <div class="rel-os-row1">
+        <span class="rel-os-nome">${o.id} · ${o.cliente}</span>
+        <span class="rel-os-valor">${fmtM(o.valor)}</span>
+      </div>
+      <div class="rel-os-desc">${o.desc}</div>
+      <div class="rel-os-meta" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:3px">
+        ${o.tec ? `<span>👤 ${o.tec}</span>` : ''}
+        ${o.criadoEm ? `<span>📅 Criada: ${fmt(o.criadoEm.slice(0,10))}</span>` : (o.data ? `<span>📅 Prev: ${fmt(o.data)}</span>` : '')}
+        ${o.dataConclusao ? `<span>✅ Concluída: ${fmt(o.dataConclusao)}</span>` : ''}
+        ${destaque ? `<span style="color:var(--amber);font-weight:500">${destaque}</span>` : ''}
+      </div>
+    </div>`;
+
+  // ── SEÇÃO COM RODAPÉ ───────────────────────────────────
+  const secao = (titulo, cor, lista, rodape) => {
+    const tot = lista.reduce((a,o) => a+Number(o.valor||0), 0);
+    return `<div class="rel-section">
+      <div class="rel-section-title" style="${cor?'color:'+cor:''}">
+        ${titulo}
+        <span style="font-size:12px;color:var(--text3);font-weight:400">${lista.length}</span>
+      </div>
+      ${lista.length
+        ? lista.map(o => cardOS(o, '')).join('') +
+          `<div style="padding:.6rem 1rem;background:var(--surface2);font-size:13px;
+            font-weight:600;display:flex;justify-content:space-between">
+            <span>${rodape}</span><span>${fmtM(tot)}</span>
+          </div>`
+        : `<div class="rel-empty">Nenhuma OS nesta categoria em ${labelMes(mes)}.</div>`
+      }
+    </div>`;
+  };
+
+  // ── ALERTA DE DEMORA ───────────────────────────────────
+  // OS em andamento há mais de 30 dias merecem destaque
+  const hoje = new Date();
+  const andDemoradas = andamento.filter(o => {
+    const dataRef = o.criadoEm ? o.criadoEm.slice(0,10) : o.data;
+    if(!dataRef) return false;
+    const dias = Math.floor((hoje - new Date(dataRef+'T00:00:00')) / 86400000);
+    return dias > 30;
+  });
+
+  el.innerHTML = `
+    <!-- Resumo em cards -->
+    <div class="rel-cards">
+      <div class="rel-card">
+        <div class="rel-card-label">Abertas no mês</div>
+        <div class="rel-card-val m-blue">${abertas.length}</div>
+        <div class="rel-card-sub">${fmtM(valAbert)} em carteira</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-card-label">Em andamento</div>
+        <div class="rel-card-val m-amber">${andamento.length}</div>
+        <div class="rel-card-sub">${andDemoradas.length > 0
+          ? `⚠ ${andDemoradas.length} c/ +30 dias`
+          : 'dentro do prazo'}</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-card-label">Concluídas</div>
+        <div class="rel-card-val m-green">${concluidas.length}</div>
+        <div class="rel-card-sub">${fmtM(fatConc)} faturado</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-card-label">Ticket médio</div>
+        <div class="rel-card-val">${fmtM(ticketMed)}</div>
+        <div class="rel-card-sub">por OS concluída</div>
+      </div>
+    </div>
+
+    ${andDemoradas.length > 0 ? `
+    <div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--rlg);
+      padding:.85rem 1rem;margin-bottom:1rem;font-size:13px;color:var(--amber)">
+      ⚠ <strong>${andDemoradas.length} OS em andamento</strong> com mais de 30 dias sem conclusão:
+      ${andDemoradas.map(o=>`<strong>${o.id}</strong> (${Math.floor((hoje-new Date(o.data+'T00:00:00'))/86400000)}d)`).join(', ')}
+    </div>` : ''}
+
+    ${secao('📋 Abertas no mês — novas OS criadas', 'var(--blue)',
+      abertas, 'Total em carteira')}
+
+    ${secao('🔧 Em andamento — serviços em execução', 'var(--amber)',
+      andamento, 'Total em execução')}
+
+    ${secao('✅ Concluídas no mês', 'var(--green)',
+      concluidas, 'Total faturado')}
+
+    ${canceladas.length ? secao('❌ Canceladas no mês', 'var(--red)',
+      canceladas, 'Total cancelado') : ''}
+  `;
+}
+
+// ── RELATÓRIO MATERIAIS ──────────────────────────────────
+function renderRelMat(){
+  const mes = document.getElementById('mes-sel-mat').value;
+
+  // FILTRO CORRETO: usa SOMENTE dataConclusao (data real de encerramento)
+  // Nunca usa o.data (data prevista), pois o mês do relatório deve
+  // refletir quando o serviço foi efetivamente concluído.
+  const osConc = window.ordens.filter(o =>
+    o.status === 'concluida' && getMesAno(o.dataConclusao) === mes
+  );
+
+  const el = document.getElementById('rel-mat-content');
+
+  if(!osConc.length){
+    el.innerHTML = `<div class="rel-section">
+      <div class="rel-empty">Nenhuma OS concluída em <strong>${labelMes(mes)}</strong>.<br>
+      <span style="font-size:12px">O relatório usa a data de conclusão real de cada OS.</span>
+      </div></div>`;
+    return;
+  }
+
+  // OS que têm ao menos 1 material lançado
+  const osComMat = osConc.filter(o => o.materiais && o.materiais.length > 0);
+
+  // Consolidado por material (todas as OS do mês)
+  const map = {};
+  osComMat.forEach(o => (o.materiais||[]).forEach(m => {
+    if(!m.nome || !m.nome.trim()) return;
+    const k = m.nome.trim().toLowerCase();
+    if(!map[k]) map[k] = { nome:m.nome.trim(), qtd:0, total:0, os:[] };
+    map[k].qtd   += parseFloat(m.qtd||0);
+    map[k].total += parseFloat(m.qtd||0) * parseFloat(m.valor||0);
+    map[k].os.push(o.id);
+  }));
+
+  const mats     = Object.values(map).sort((a,b) => b.total - a.total);
+  const totMat   = mats.reduce((a,m) => a+m.total, 0);
+  const totOS    = osConc.reduce((a,o) => a+Number(o.valor||0), 0);
+  const totSemMat = osConc.length - osComMat.length;
+
+  el.innerHTML = `
+    <!-- Cards de resumo -->
+    <div class="rel-cards" style="grid-template-columns:repeat(2,1fr)">
+      <div class="rel-card">
+        <div class="rel-card-label">OS concluídas</div>
+        <div class="rel-card-val">${osConc.length}</div>
+        <div class="rel-card-sub">em ${labelMes(mes)}</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-card-label">Com materiais</div>
+        <div class="rel-card-val">${osComMat.length}</div>
+        <div class="rel-card-sub">${totSemMat > 0 ? totSemMat+' sem materiais' : 'todas com materiais'}</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-card-label">Custo total mat.</div>
+        <div class="rel-card-val">${fmtM(totMat)}</div>
+        <div class="rel-card-sub">${mats.length} item${mats.length!==1?'s':''} diferentes</div>
+      </div>
+      <div class="rel-card">
+        <div class="rel-card-label">Faturamento</div>
+        <div class="rel-card-val">${fmtM(totOS)}</div>
+        <div class="rel-card-sub">total das OS</div>
+      </div>
+    </div>
+
+    <!-- Consolidado por material -->
+    <div class="rel-section">
+      <div class="rel-section-title">
+        Consolidado por material
+        <span style="font-size:12px;color:var(--text3);font-weight:400">${mats.length} item${mats.length!==1?'s':''}</span>
+      </div>
+      ${mats.length ? `
+      <table class="rel-table">
+        <tr>
+          <th>Material / Peça</th>
+          <th style="text-align:right">Qtd total</th>
+          <th style="text-align:right">Custo total</th>
+          <th>OS</th>
+        </tr>
+        ${mats.map(m=>`<tr>
+          <td><strong>${m.nome}</strong></td>
+          <td class="mono right">${m.qtd.toLocaleString('pt-BR',{maximumFractionDigits:2})}</td>
+          <td class="mono right">${fmtM(m.total)}</td>
+          <td style="font-size:11px;color:var(--text3)">${[...new Set(m.os)].join(', ')}</td>
+        </tr>`).join('')}
+        <tr class="total-tr">
+          <td>Total materiais</td>
+          <td></td>
+          <td class="mono right">${fmtM(totMat)}</td>
+          <td></td>
+        </tr>
+      </table>` : '<div class="rel-empty">Nenhum material registrado nas OS deste mês.</div>'}
+    </div>
+
+    <!-- Detalhe por OS -->
+    <div class="rel-section">
+      <div class="rel-section-title">
+        Detalhe por OS
+        <span style="font-size:12px;color:var(--text3);font-weight:400">${osConc.length} OS</span>
+      </div>
+      ${osConc.map(o => {
+        const matsOS = o.materiais && o.materiais.length > 0;
+        const subTot = matsOS ? totalMateriais(o.materiais) : 0;
+        return `<div style="padding:.85rem 1rem;border-bottom:1px solid var(--surface2)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:${matsOS?'8px':'0'}">
+            <div>
+              <div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace">${o.id} · Concluída em ${fmt(o.dataConclusao)}</div>
+              <div style="font-size:14px;font-weight:600">${o.cliente}</div>
+              <div style="font-size:12px;color:var(--text2)">${o.desc}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace">Valor OS</div>
+              <div style="font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtM(o.valor)}</div>
+              ${matsOS?`<div style="font-size:10px;color:var(--text3);margin-top:2px">Mat: ${fmtM(subTot)}</div>`:''}
+            </div>
+          </div>
+          ${matsOS ? `
+          <table class="mat-table">
+            <tr><th>Material / Peça</th><th>Qtd</th><th>Vl. Unit.</th><th>Total</th></tr>
+            ${o.materiais.map(m=>`<tr>
+              <td>${m.nome}</td>
+              <td>${m.qtd}</td>
+              <td class="mono">${fmtM(m.valor)}</td>
+              <td class="mono">${fmtM(parseFloat(m.qtd||0)*parseFloat(m.valor||0))}</td>
+            </tr>`).join('')}
+            <tr class="total-tr">
+              <td colspan="3">Subtotal materiais</td>
+              <td class="mono">${fmtM(subTot)}</td>
+            </tr>
+          </table>` :
+          `<div style="font-size:12px;color:var(--text3);font-style:italic">Nenhum material registrado nesta OS.</div>`}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// MÓDULO FINANCEIRO v6 — reescrito do zero
+// Filosofia: dados salvos NO OBJETO sempre que algo muda.
+// renderPagamentoModal só lê o objeto, nunca tenta ler o DOM.
+// ═══════════════════════════════════════════════════════
+
+const FORMAS = ['Dinheiro','Pix','Cartão','Cheque','Transferência'];
+
+// ── Inicializa estrutura de pagamento ────────────────────
+function getPag(o){
+  if(!o.pagamento) o.pagamento = { tipo:'avista', entrada:null, parcelas:[] };
+  if(!o.pagamento.parcelas) o.pagamento.parcelas = [];
+  return o.pagamento;
+}
+
+function fmtData(d){ if(!d)return'—'; const[y,m,dd]=d.split('-'); return`${dd}/${m}/${y}`; }
+
+function diasAtraso(dataStr){
+  if(!dataStr) return 0;
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  return Math.floor((hoje - new Date(dataStr+'T00:00:00')) / 86400000);
+}
+
+// ── Persistir no localStorage ────────────────────────────
+function persistir(){
+  localStorage.setItem('sf3_ordens', JSON.stringify(window.ordens));
+  if(window.invalidarCache) window.invalidarCache();
+}
+
+// ── RENDER PRINCIPAL DO PAINEL DE PAGAMENTO ──────────────
+// Layout mobile-first: cards empilhados no celular
+function renderPagamentoModal(id){
+  const o = window.ordens.find(x=>x.id===id); if(!o) return;
+  const p = getPag(o);
+  const el = document.getElementById('pag-modal-'+id); if(!el) return;
+
+  const tipos = {
+    avista:           'À vista',
+    entrada_parcelas: 'Entrada + Parcelas',
+    entrada_saldo:    'Saldo Final',
+    misto:            'Misto'
+  };
+
+  // ── Botões de tipo (scroll horizontal no mobile) ──
+  let h = `<div class="fin-tipo-bar" style="margin-bottom:12px">`;
+  Object.entries(tipos).forEach(([k,v])=>{
+    h += `<button class="fin-tipo-btn${p.tipo===k?' active':''}"
+      onclick="mudarTipo('${id}','${k}')">${v}</button>`;
+  });
+  h += `</div>`;
+
+  // ── Seção Entrada ──
+  if(p.tipo !== 'avista'){
+    const e = p.entrada || {};
+    h += `<div class="pag-section">
+      <div class="pag-section-title">Entrada / Sinal</div>
+      <div class="pag-entrada-grid">
+        <div class="pag-field">
+          <span class="pag-field-label">Valor R$</span>
+          <input type="number" class="pag-input" id="ent-val-${id}"
+            placeholder="0,00" min="0" step="any" value="${e.valor||''}"
+            onchange="salvarEntradaCampo('${id}','valor',this.value)">
+        </div>
+        <div class="pag-field">
+          <span class="pag-field-label">Forma</span>
+          <select class="pag-input" id="ent-forma-${id}"
+            onchange="salvarEntradaCampo('${id}','forma',this.value)">
+            ${FORMAS.map(f=>`<option${(e.forma||'Pix')===f?' selected':''}>${f}</option>`).join('')}
+          </select>
+        </div>
+        <div class="pag-field">
+          <span class="pag-field-label">Data</span>
+          <input type="date" class="pag-input" id="ent-data-${id}"
+            value="${e.data||''}"
+            onchange="salvarEntradaCampo('${id}','data',this.value)">
+        </div>
+        <div class="pag-field" style="justify-content:flex-end">
+          <span class="pag-field-label">&nbsp;</span>
+          <button class="pag-receber-btn${e.recebido?' pago':''}"
+            onclick="toggleEntradaRecebido('${id}')">
+            ${e.recebido?'✓ Recebido':'Receber'}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // ── Seção Parcelas ──
+  const labelSec = p.tipo==='avista' ? 'Pagamento'
+                 : p.tipo==='entrada_saldo' ? 'Saldo / Parcelas'
+                 : 'Parcelas';
+
+  h += `<div class="pag-section" style="margin-top:8px">
+    <div class="pag-section-title">${labelSec}</div>`;
+
+  if(p.parcelas.length === 0){
+    h += `<div style="font-size:13px;color:var(--text3);padding:8px 0 4px;text-align:center">
+      Nenhum lançamento ainda.</div>`;
+  } else {
+    p.parcelas.forEach((pc,i)=>{
+      h += `<div class="pc-card">
+        <div class="pc-card-top">
+          <span class="pc-card-num">Lançamento ${i+1}</span>
+          <button class="pc-card-rem" onclick="removerParcela('${id}',${i})" title="Remover">×</button>
+        </div>
+        <div class="pc-card-grid">
+          <div class="pag-field full">
+            <span class="pag-field-label">Descrição</span>
+            <input type="text" class="pag-input" id="pc-desc-${id}-${i}"
+              placeholder="Ex: 1ª parcela" value="${pc.desc||''}"
+              onchange="salvarParcelaCampo('${id}',${i},'desc',this.value)">
+          </div>
+          <div class="pag-field">
+            <span class="pag-field-label">Valor R$</span>
+            <input type="number" class="pag-input" id="pc-val-${id}-${i}"
+              placeholder="0,00" min="0" step="any" value="${pc.valor||''}"
+              onchange="salvarParcelaCampo('${id}',${i},'valor',this.value)">
+          </div>
+          <div class="pag-field">
+            <span class="pag-field-label">Forma</span>
+            <select class="pag-input" id="pc-forma-${id}-${i}"
+              onchange="salvarParcelaCampo('${id}',${i},'forma',this.value)">
+              ${FORMAS.map(f=>`<option${(pc.forma||'Pix')===f?' selected':''}>${f}</option>`).join('')}
+            </select>
+          </div>
+          <div class="pag-field">
+            <span class="pag-field-label">Data</span>
+            <input type="date" class="pag-input" id="pc-data-${id}-${i}"
+              value="${pc.data||''}"
+              onchange="salvarParcelaCampo('${id}',${i},'data',this.value)">
+          </div>
+          <div class="pag-field" style="justify-content:flex-end">
+            <span class="pag-field-label">&nbsp;</span>
+            <button class="pag-receber-btn${pc.recebido?' pago':''}"
+              onclick="toggleParcelaRecebido('${id}',${i})">
+              ${pc.recebido?'✓ Recebido':'Receber'}
+            </button>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  h += `<button class="btn-add-mat" onclick="addParcela('${id}')" style="margin-top:4px">
+    + Adicionar ${p.tipo==='avista'?'pagamento':'parcela'}
+  </button></div>`;
+
+  // ── Resumo ──
+  const totalOS  = Number(o.valor||0);
+  const totReceb = calcTotalRecebido(o);
+  const totPend  = Math.max(0, totalOS-totReceb);
+  h += `<div class="pag-resumo" id="pag-resumo-${id}">
+    <div class="pag-resumo-box" style="background:var(--green-bg);border:1px solid var(--green-bd)">
+      <div class="pag-resumo-label" style="color:var(--green)">Recebido</div>
+      <div class="pag-resumo-val" style="color:var(--green)">${fmtM(totReceb)}</div>
+    </div>
+    <div class="pag-resumo-box" style="background:var(--amber-bg);border:1px solid var(--amber-bd)">
+      <div class="pag-resumo-label" style="color:var(--amber)">Pendente</div>
+      <div class="pag-resumo-val" style="color:var(--amber)">${fmtM(totPend)}</div>
+    </div>
+    <div class="pag-resumo-box" style="background:var(--surface2);border:1px solid var(--border)">
+      <div class="pag-resumo-label">Total OS</div>
+      <div class="pag-resumo-val">${fmtM(totalOS)}</div>
+    </div>
+  </div>`;
+
+  el.innerHTML = h;
+}
+
+// ── SALVAR CAMPO INDIVIDUAL (sem remontar o DOM) ─────────
+// Cada onchange salva diretamente no objeto — sem depender de onblur ou coletarEsalvar
+function salvarEntradaCampo(id, campo, val){
+  const o = window.ordens.find(x=>x.id===id); if(!o) return;
+  const p = getPag(o);
+  if(!p.entrada) p.entrada = {valor:'',forma:'Pix',data:'',recebido:false};
+  p.entrada[campo] = campo==='valor' ? (parseFloat(val)||0) : val;
+  persistir();
+  // Atualiza só o resumo, sem remontar tudo
+  atualizarResumoPag(id);
+}
+
+function salvarParcelaCampo(id, i, campo, val){
+  const o = window.ordens.find(x=>x.id===id); if(!o) return;
+  const p = getPag(o);
+  if(!p.parcelas[i]) return;
+  p.parcelas[i][campo] = campo==='valor' ? (parseFloat(val)||0) : val;
+  persistir();
+  atualizarResumoPag(id);
+}
+
+// ── MUDAR TIPO — preserva dados existentes ───────────────
+function capturarDOMAtual(id){
+  // Lê todos os campos do DOM pelo ID explícito antes de trocar de tipo.
+  // Única forma confiável — não depende de onchange ter disparado.
+  const o = window.ordens.find(x=>x.id===id); if(!o) return;
+  const p = getPag(o);
+
+  // Entrada — campos com IDs fixos
+  const entVal   = document.getElementById('ent-val-'+id);
+  const entForma = document.getElementById('ent-forma-'+id);
+  const entData  = document.getElementById('ent-data-'+id);
+  if(entVal){
+    if(!p.entrada) p.entrada={valor:'',forma:'Pix',data:'',recebido:false};
+    p.entrada.valor = parseFloat(entVal.value)||0;
+    if(entForma) p.entrada.forma = entForma.value;
+    if(entData)  p.entrada.data  = entData.value;
+  }
+
+  // Parcelas — cada campo tem ID no formato pc-desc-OSID-INDEX
+  p.parcelas.forEach((pc, i)=>{
+    const descEl  = document.getElementById('pc-desc-'+id+'-'+i);
+    const valEl   = document.getElementById('pc-val-'+id+'-'+i);
+    const formaEl = document.getElementById('pc-forma-'+id+'-'+i);
+    const dataEl  = document.getElementById('pc-data-'+id+'-'+i);
+    if(descEl)  pc.desc  = descEl.value;
+    if(valEl)   pc.valor = parseFloat(valEl.value)||0;
+    if(formaEl) pc.forma = formaEl.value;
+    if(dataEl)  pc.data  = dataEl.value;
+  });
+
+  persistir();
+}
+
+function mudarTipo(id, novoTipo){
+  const o = window.ordens.find(x=>x.id===id); if(!o) return;
+  const p = getPag(o);
+  if(p.tipo === novoTipo) return;
+
+  // PASSO 1: captura tudo que está no DOM antes de qualquer mudança
+  capturarDOMAtual(id);
+
+  const tiposComEntrada = ['entrada_parcelas','entrada_saldo','misto'];
+
+  // PASSO 2: se novo tipo não usa entrada, converte entrada em parcela
+  if(!tiposComEntrada.includes(novoTipo) && p.entrada && Number(p.entrada.valor)>0){
+    const jaHa = p.parcelas.some(pc=>pc._convEntrada);
+    if(!jaHa){
+      p.parcelas.unshift({
+        desc:'Pagamento', valor:p.entrada.valor,
+        forma:p.entrada.forma, data:p.entrada.data,
+        recebido:p.entrada.recebido, _convEntrada:true
+      });
+    }
+  }
+
+  // PASSO 3: se novo tipo usa entrada e não tinha, cria entrada vazia
+  if(tiposComEntrada.includes(novoTipo) && !p.entrada){
+    p.entrada = {valor:'',forma:'Pix',data:dataHoje(),recebido:false};
+  }
+
+  // PASSO 4: NUNCA apaga p.parcelas ao trocar de tipo.
+  // Se entrada_saldo e ainda não tem nenhuma parcela, cria só uma vazia.
+  if(novoTipo === 'entrada_saldo' && p.parcelas.length === 0){
+    p.parcelas.push({desc:'Saldo final',valor:'',forma:'Pix',data:'',recebido:false});
+  }
+
+  // PASSO 5: muda tipo e renderiza — todas as parcelas preservadas
+  p.tipo = novoTipo;
+  persistir();
+  renderPagamentoModal(id);
+}
+// ── TOGGLE RECEBIDO ──────────────────────────────────────
+function toggleEntradaRecebido(id){
+  const o=window.ordens.find(x=>x.id===id); if(!o) return;
+  const p=getPag(o);
+  if(!p.entrada) p.entrada={valor:'',forma:'Pix',data:'',recebido:false};
+  p.entrada.recebido = !p.entrada.recebido;
+  // Salva a data REAL em que foi marcado como recebido (hoje)
+  // Se desmarcado, limpa a data de recebimento
+  p.entrada.dataRecebidoEm = p.entrada.recebido ? dataHoje() : null;
+  persistir();
+  renderPagamentoModal(id);
+}
+
+function toggleParcelaRecebido(id,i){
+  const o=window.ordens.find(x=>x.id===id); if(!o) return;
+  const p=getPag(o);
+  if(!p.parcelas[i]) return;
+  p.parcelas[i].recebido = !p.parcelas[i].recebido;
+  // Salva a data REAL em que foi marcado como recebido (hoje)
+  // Se desmarcado, limpa a data de recebimento
+  p.parcelas[i].dataRecebidoEm = p.parcelas[i].recebido ? dataHoje() : null;
+  persistir();
+  renderPagamentoModal(id);
+}
+
+// ── ADICIONAR PARCELA ────────────────────────────────────
+function removerParcela(id, i){
+  const o = window.ordens.find(x=>x.id===id); if(!o) return;
+  capturarDOMAtual(id);
+  const p = getPag(o);
+  p.parcelas.splice(i, 1);
+  persistir();
+  renderPagamentoModal(id);
+}
+
+function addParcela(id){
+  const o=window.ordens.find(x=>x.id===id); if(!o) return;
+  const p=getPag(o);
+  const n = p.parcelas.filter(pc=>!pc._convEntrada).length + 1;
+  p.parcelas.push({desc:`${n}ª parcela`,valor:'',forma:'Pix',data:'',recebido:false});
+  persistir();
+  renderPagamentoModal(id);
+}
+
+// ── CALCULAR TOTAL RECEBIDO ──────────────────────────────
+function calcTotalRecebido(o){
+  const p=o.pagamento; if(!p) return 0;
+  let tot=0;
+  if(p.entrada?.recebido) tot += Number(p.entrada.valor||0);
+  (p.parcelas||[]).forEach(pc=>{ if(pc.recebido) tot += Number(pc.valor||0); });
+  return tot;
+}
+
+// ── ATUALIZAR SÓ O RESUMO (sem remontar tudo) ───────────
+function atualizarResumoPag(id){
+  const o=window.ordens.find(x=>x.id===id); if(!o) return;
+  const el=document.getElementById('pag-resumo-'+id); if(!el) return;
+  const totalOS=Number(o.valor||0);
+  const totReceb=calcTotalRecebido(o);
+  const totPend=Math.max(0,totalOS-totReceb);
+  el.innerHTML=`
+    <div class="pag-resumo-box" style="background:var(--green-bg);border:1px solid var(--green-bd)">
+      <div class="pag-resumo-label" style="color:var(--green)">Recebido</div>
+      <div class="pag-resumo-val" style="color:var(--green)">${fmtM(totReceb)}</div>
+    </div>
+    <div class="pag-resumo-box" style="background:var(--amber-bg);border:1px solid var(--amber-bd)">
+      <div class="pag-resumo-label" style="color:var(--amber)">Pendente</div>
+      <div class="pag-resumo-val" style="color:var(--amber)">${fmtM(totPend)}</div>
+    </div>
+    <div class="pag-resumo-box" style="background:var(--surface2);border:1px solid var(--border)">
+      <div class="pag-resumo-label">Total OS</div>
+      <div class="pag-resumo-val">${fmtM(totalOS)}</div>
+    </div>`;
+}
+
+
+// ── RELATÓRIO FINANCEIRO ─────────────────────────────────
+
+
+
+
+// ── FUNÇÕES LEGADAS removidas (coletarEsalvar, setPagTipo, etc.)
+// Substituídas por: mudarTipo, salvarEntradaCampo, salvarParcelaCampo
+
+
+// ══════════════════════════════════════════════════════
+// MÓDULO RELATÓRIO DE RECEBIMENTOS — v2
+// Lógica:
+//   RECEBIDO  → aparece SOMENTE no mês em que foi marcado recebido
+//   PENDENTE  → aparece em TODOS os meses a partir da data do lançamento
+//               até ser marcado como recebido (persiste no tempo)
+// ══════════════════════════════════════════════════════
+
+let recebFiltroTipo = 'mes';
+
+function setFiltroReceb(tipo){
+  recebFiltroTipo = tipo;
+  document.getElementById('rbtn-mes').classList.toggle('active', tipo==='mes');
+  document.getElementById('rbtn-livre').classList.toggle('active', tipo==='livre');
+  document.getElementById('receb-filtro-mes').style.display   = tipo==='mes'   ? 'flex' : 'none';
+  document.getElementById('receb-filtro-livre').style.display = tipo==='livre' ? 'flex' : 'none';
+  renderRecebimentos();
+}
+
+function initRecebimentos(){
+  const sel = document.getElementById('mes-sel-receb');
+  if(sel && !sel.options.length){
+    const ultimos12 = [];
+    for(let i=0; i<12; i++){
+      const d = new Date(); d.setMonth(d.getMonth()-i);
+      ultimos12.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+    }
+    const mesesOS = window.ordens.flatMap(o=>[getMesAno(o.data),getMesAno(o.dataConclusao)].filter(Boolean));
+    const todos = [...new Set([...ultimos12,...mesesOS])].sort().reverse();
+    sel.innerHTML = todos.map(m=>`<option value="${m}">${labelMes(m)}</option>`).join('');
+  }
+  const hoje = new Date();
+  const ini = document.getElementById('receb-data-ini');
+  const fim = document.getElementById('receb-data-fim');
+  if(ini && !ini.value) ini.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-01`;
+  if(fim && !fim.value) fim.value = dataHoje();
+  renderRecebimentos();
+}
+
+function getIntervaloReceb(){
+  if(recebFiltroTipo === 'mes'){
+    const mes = document.getElementById('mes-sel-receb')?.value;
+    if(!mes) return null;
+    const [y,m] = mes.split('-');
+    const ini = `${y}-${m}-01`;
+    const dFim = new Date(parseInt(y), parseInt(m), 0);
+    const fim = dFim.getFullYear()+'-'+String(dFim.getMonth()+1).padStart(2,'0')+'-'+String(dFim.getDate()).padStart(2,'0');
+    return { ini, fim, label: labelMes(mes), mes };
+  } else {
+    const ini = document.getElementById('receb-data-ini')?.value;
+    const fim = document.getElementById('receb-data-fim')?.value;
+    if(!ini || !fim) return null;
+    return { ini, fim, label: `${fmtData(ini)} a ${fmtData(fim)}`, mes: null };
+  }
+}
+
+// ── COLETAR TODOS OS LANÇAMENTOS DA OS ───────────────────
+function getLancamentosOS(o){
+  const p = o.pagamento;
+  const lancamentos = [];
+  if(!p) return lancamentos;
+
+  if(p.entrada && Number(p.entrada.valor) > 0){
+    lancamentos.push({
+      os: o.id, cliente: o.cliente, desc: 'Entrada / Sinal',
+      valor: Number(p.entrada.valor),
+      forma: p.entrada.forma || '—',
+      data:  p.entrada.data || o.dataConclusao || o.data || '',
+      recebido: !!p.entrada.recebido,
+      // dataRecebidoEm = data real que clicou "Receber" (salva pelo toggle)
+      // Fallback para dataRecebidoEm não existir em lançamentos antigos: usa data do lançamento
+      dataRecebimento: p.entrada.recebido
+        ? (p.entrada.dataRecebidoEm || p.entrada.data || o.dataConclusao || dataHoje())
+        : null,
+    });
+  }
+
+  (p.parcelas || []).forEach((pc, i) => {
+    if(Number(pc.valor) <= 0) return;
+    lancamentos.push({
+      os: o.id, cliente: o.cliente,
+      desc: pc.desc || `Parcela ${i+1}`,
+      valor: Number(pc.valor),
+      forma: pc.forma || '—',
+      data:  pc.data || o.dataConclusao || o.data || '',
+      recebido: !!pc.recebido,
+      // dataRecebidoEm = data real que clicou "Receber"
+      // Fallback para registros antigos sem dataRecebidoEm
+      dataRecebimento: pc.recebido
+        ? (pc.dataRecebidoEm || pc.data || o.dataConclusao || dataHoje())
+        : null,
+    });
+  });
+
+  // OS sem pagamento configurado: usa valor total como pendente
+  if(lancamentos.length === 0 && Number(o.valor) > 0 && o.status !== 'cancelada'){
+    lancamentos.push({
+      os: o.id, cliente: o.cliente,
+      desc: 'Pagamento não configurado',
+      valor: Number(o.valor),
+      forma: '—',
+      data: o.dataConclusao || o.data || '',
+      recebido: false,
+      dataRecebimento: null,
+    });
+  }
+
+  return lancamentos;
+}
+
+function renderRecebimentos(){
+  const intervalo = getIntervaloReceb();
+  const el = document.getElementById('receb-content');
+  if(!el) return;
+  if(!intervalo){
+    el.innerHTML = '<div class="rel-empty">Selecione um período.</div>';
+    return;
+  }
+
+  const { ini, fim, label } = intervalo;
+  const dIni = new Date(ini + 'T00:00:00');
+  const dFim = new Date(fim + 'T23:59:59');
+  const hoje = new Date(); hoje.setHours(23,59,59);
+
+  // ── SEPARAR EM DUAS LISTAS ────────────────────────────
+  // 1. RECEBIDOS NO PERÍODO: marcados como recebidos E data do recebimento está no período
+  // 2. PENDENTES ACUMULADOS: NÃO recebidos E data do lançamento <= fim do período
+  //    (aparecem em QUALQUER mês a partir da data do lançamento)
+
+  const recebidos  = [];
+  const pendentes  = [];
+
+  window.ordens.forEach(o => {
+    if(o.status === 'cancelada') return;
+    getLancamentosOS(o).forEach(lc => {
+
+      if(lc.recebido){
+        // RECEBIDO: só aparece no mês/período em que foi marcado
+        const dataRef = lc.dataRecebimento || lc.data;
+        if(dataRef){
+          const d = new Date(dataRef + 'T00:00:00');
+          if(d >= dIni && d <= dFim) recebidos.push(lc);
+        } else {
+          // Sem data de recebimento: aparece no período se a data do lançamento está no período
+          const dLanc = lc.data ? new Date(lc.data + 'T00:00:00') : null;
+          if(dLanc && dLanc >= dIni && dLanc <= dFim) recebidos.push(lc);
+        }
+      } else {
+        // PENDENTE: aparece em QUALQUER mês consultado até ser marcado recebido.
+        // A data de vencimento NÃO filtra se aparece — só classifica se está
+        // "em atraso" (vencimento < hoje) ou "a vencer" (vencimento >= hoje).
+        // Regra: todo pendente é sempre visível, independente do mês consultado.
+        pendentes.push(lc);
+      }
+    });
+  });
+
+  // Ordenar pendentes do mais antigo para o mais recente
+  pendentes.sort((a,b) => {
+    if(!a.data && !b.data) return 0;
+    if(!a.data) return 1;
+    if(!b.data) return -1;
+    return new Date(a.data) - new Date(b.data);
+  });
+
+  // Ordenar recebidos do mais recente para o mais antigo
+  recebidos.sort((a,b) => {
+    const da = a.dataRecebimento || a.data || '';
+    const db = b.dataRecebimento || b.data || '';
+    return db.localeCompare(da);
+  });
+
+  const totRecebido  = recebidos.reduce((a,lc) => a + lc.valor, 0);
+  const totPendente  = pendentes.reduce((a,lc) => a + lc.valor, 0);
+  const totGeral     = totRecebido + totPendente;
+
+  // Calcular total pendente acumulado (TUDO pendente até hoje, não só o período)
+  let totPendenteAcumulado = 0;
+  window.ordens.forEach(o => {
+    if(o.status === 'cancelada') return;
+    getLancamentosOS(o).forEach(lc => {
+      if(!lc.recebido) totPendenteAcumulado += lc.valor;
+    });
+  });
+
+  // Classificar pendentes por atraso
+  const pendenteAtrasado = pendentes.filter(lc => {
+    if(!lc.data) return false;
+    return new Date(lc.data + 'T00:00:00') < hoje;
+  });
+  const pendenteAVencer = pendentes.filter(lc => {
+    if(!lc.data) return true;
+    return new Date(lc.data + 'T00:00:00') >= hoje;
+  });
+
+  // ── RENDERIZAR ───────────────────────────────────────
+  let html = '';
+
+  // Alerta de pendências acumuladas (se houver)
+  if(totPendenteAcumulado > 0){
+    html += `
+    <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:var(--rlg);
+      padding:.9rem 1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--red);text-transform:uppercase;
+          letter-spacing:.07em;font-family:'IBM Plex Mono',monospace;margin-bottom:3px">
+          ⚠ Total pendente acumulado (todos os meses)
+        </div>
+        <div style="font-size:12px;color:var(--red)">
+          Valores ainda não recebidos em qualquer data — clique em cada OS para marcar como recebido
+        </div>
+      </div>
+      <div style="font-size:22px;font-weight:700;color:var(--red);font-family:'IBM Plex Mono',monospace;flex-shrink:0">
+        ${fmtM(totPendenteAcumulado)}
+      </div>
+    </div>`;
+  }
+
+  // Cards de resumo do período
+  html += `
+  <div style="font-size:12px;color:var(--text3);margin-bottom:.75rem">
+    Período consultado: <strong>${label}</strong>
+  </div>
+  <div class="fin-card-grid">
+    <div class="fin-card" style="border-color:var(--green-bd);background:var(--green-bg)">
+      <div class="fin-card-label" style="color:var(--green)">Recebido no período</div>
+      <div class="fin-card-val" style="color:var(--green)">${fmtM(totRecebido)}</div>
+      <div class="fin-card-sub" style="color:var(--green)">${recebidos.length} lançamento${recebidos.length!==1?'s':''}</div>
+    </div>
+    <div class="fin-card" style="border-color:var(--amber-bd);background:var(--amber-bg)">
+      <div class="fin-card-label" style="color:var(--amber)">Pendente no período</div>
+      <div class="fin-card-val" style="color:var(--amber)">${fmtM(totPendente)}</div>
+      <div class="fin-card-sub" style="color:var(--amber)">${pendentes.length} lançamento${pendentes.length!==1?'s':''}</div>
+    </div>
+    <div class="fin-card">
+      <div class="fin-card-label">Em atraso</div>
+      <div class="fin-card-val" style="color:var(--red)">${fmtM(pendenteAtrasado.reduce((a,lc)=>a+lc.valor,0))}</div>
+      <div class="fin-card-sub">${pendenteAtrasado.length} lançamento${pendenteAtrasado.length!==1?'s':''}</div>
+    </div>
+    <div class="fin-card">
+      <div class="fin-card-label">A vencer</div>
+      <div class="fin-card-val m-blue">${fmtM(pendenteAVencer.reduce((a,lc)=>a+lc.valor,0))}</div>
+      <div class="fin-card-sub">${pendenteAVencer.length} lançamento${pendenteAVencer.length!==1?'s':''}</div>
+    </div>
+  </div>`;
+
+  // ── SEÇÃO: PENDÊNCIAS ─────────────────────────────────
+  html += `
+  <div class="fin-section">
+    <div class="fin-section-title" style="background:var(--amber-bg);color:var(--amber)">
+      🕐 Pendências em aberto
+      <span style="font-size:12px;font-weight:400">${pendentes.length} · ${fmtM(totPendente)}</span>
+    </div>`;
+
+  if(!pendentes.length){
+    html += `<div class="rel-empty" style="color:var(--green)">✓ Nenhuma pendência até ${label}.</div>`;
+  } else {
+    // Agrupar por OS para melhor leitura
+    const porOS = {};
+    pendentes.forEach(lc => {
+      if(!porOS[lc.os]) porOS[lc.os] = { os:lc.os, cliente:lc.cliente, itens:[] };
+      porOS[lc.os].itens.push(lc);
+    });
+
+    Object.values(porOS).forEach(grupo => {
+      const totGrupo = grupo.itens.reduce((a,lc)=>a+lc.valor,0);
+      html += `
+      <div style="border-bottom:1px solid var(--surface2)">
+        <div style="padding:.6rem 1rem;background:var(--surface2);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <span style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace">${grupo.os}</span>
+            <span style="font-size:13px;font-weight:600;margin-left:8px">${grupo.cliente}</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--amber)">${fmtM(totGrupo)}</span>
+        </div>
+        ${grupo.itens.map(lc => {
+          const atrasado = lc.data && new Date(lc.data+'T00:00:00') < hoje;
+          const dias = lc.data ? Math.floor((hoje - new Date(lc.data+'T00:00:00'))/86400000) : 0;
+          return `<div style="padding:.6rem 1rem 0.6rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:13px">${lc.desc}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">
+                ${lc.forma}${lc.data ? ' · Venc: '+fmtData(lc.data) : ' · Sem data'}
+                ${atrasado ? `<span style="color:var(--red);font-weight:600;margin-left:6px">⚠ ${dias}d em atraso</span>` : ''}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span style="font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace">${fmtM(lc.valor)}</span>
+              <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)">Pendente</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  // ── SEÇÃO: RECEBIDOS ──────────────────────────────────
+  html += `
+  <div class="fin-section">
+    <div class="fin-section-title" style="background:var(--green-bg);color:var(--green)">
+      ✅ Recebidos no período
+      <span style="font-size:12px;font-weight:400">${recebidos.length} · ${fmtM(totRecebido)}</span>
+    </div>`;
+
+  if(!recebidos.length){
+    html += `<div class="rel-empty">Nenhum recebimento registrado em ${label}.</div>`;
+  } else {
+    // Agrupar recebidos por OS
+    const porOSRec = {};
+    recebidos.forEach(lc => {
+      if(!porOSRec[lc.os]) porOSRec[lc.os] = { os:lc.os, cliente:lc.cliente, itens:[] };
+      porOSRec[lc.os].itens.push(lc);
+    });
+
+    // Tabela resumo por forma de pagamento
+    const formas = {};
+    recebidos.forEach(lc => {
+      const f = lc.forma || '—';
+      if(!formas[f]) formas[f] = { forma:f, total:0, qtd:0 };
+      formas[f].total += lc.valor;
+      formas[f].qtd++;
+    });
+    const formasRows = Object.values(formas).sort((a,b)=>b.total-a.total);
+
+    Object.values(porOSRec).forEach(grupo => {
+      const totGrupo = grupo.itens.reduce((a,lc)=>a+lc.valor,0);
+      html += `
+      <div style="border-bottom:1px solid var(--surface2)">
+        <div style="padding:.6rem 1rem;background:var(--green-bg);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <span style="font-size:11px;color:var(--green);font-family:'IBM Plex Mono',monospace">${grupo.os}</span>
+            <span style="font-size:13px;font-weight:600;margin-left:8px">${grupo.cliente}</span>
+          </div>
+          <span style="font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--green)">${fmtM(totGrupo)}</span>
+        </div>
+        ${grupo.itens.map(lc => `
+          <div style="padding:.6rem 1rem 0.6rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:13px">${lc.desc}</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">
+                ${lc.forma}${lc.data?' · '+fmtData(lc.data):''}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span style="font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--green)">${fmtM(lc.valor)}</span>
+              <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)">✓ Recebido</span>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    });
+
+    // Resumo por forma de pagamento
+    html += `
+    <div style="padding:.75rem 1rem;background:var(--surface2)">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">Resumo por forma de pagamento</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${formasRows.map(f=>`
+          <div style="background:#fff;border:1px solid var(--green-bd);border-radius:var(--r);padding:6px 12px;font-size:12px">
+            <span style="color:var(--text2)">${f.forma}</span>
+            <span style="font-weight:600;color:var(--green);font-family:'IBM Plex Mono',monospace;margin-left:8px">${fmtM(f.total)}</span>
+            <span style="color:var(--text3);font-size:11px;margin-left:4px">(${f.qtd}×)</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Rodapé totalizador para impressão
+  html += `
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);
+    padding:.85rem 1rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;font-weight:600">
+    <span>Total do período: ${label}</span>
+    <span style="font-family:'IBM Plex Mono',monospace">
+      Recebido: <span style="color:var(--green)">${fmtM(totRecebido)}</span> &nbsp;·&nbsp;
+      Pendente: <span style="color:var(--amber)">${fmtM(totPendente)}</span>
+    </span>
+  </div>`;
+
+  el.innerHTML = html;
+}
+// ── FIM MÓDULO RECEBIMENTOS ─────────────────────────────
+
+// ── AUTENTICAÇÃO ─────────────────────────────────────────
+// Senha do administrador (Benhur) — acesso permanente
+const SENHA_ADMIN = 'BDT@admin2026';
+
+// Senhas dos testadores — 15 dias de teste
+// Para bloquear um testador: remova a senha da lista abaixo
+const SENHAS_TESTE = [
+  'A2026',  // Testador 1
+  'B2026',  // Testador 2
+  'C2026',  // Testador 3
+  'D2026',  // Testador 4
+  'E2026',  // Testador 5
+  'F2026',  // Testador 6
+  'G2026',  // Testador 7
+  'H2026',  // Testador 8
+  'I2026',  // Testador 9
+  'J2026',  // Testador 10
+];
+
+const LOGIN_KEY = 'sf_auth';
+
+function verificarSenha(){
+  const senha = document.getElementById('login-input').value.trim();
+  const erro  = document.getElementById('login-erro');
+
+  if(senha === SENHA_ADMIN || SENHAS_TESTE.includes(senha)){
+    sessionStorage.setItem(LOGIN_KEY, 'ok');
+    document.getElementById('login-screen').style.display = 'none';
+    erro.style.display = 'none';
+    renderAll();
+  } else {
+    erro.style.display = 'block';
+    document.getElementById('login-input').value = '';
+    document.getElementById('login-input').focus();
+  }
+}
+
+function checarLogin(){
+  // Mantém sessão enquanto o navegador estiver aberto
+  // Ao fechar e reabrir o navegador, pede senha novamente
+  if(sessionStorage.getItem(LOGIN_KEY) === 'ok'){
+    document.getElementById('login-screen').style.display = 'none';
+  }
+  // Se não autenticado, a tela de login já está visível (display:flex no CSS)
+}
+
+// Inicializa verificação ao carregar a página
+checarLogin();
+// ── FIM AUTENTICAÇÃO ──────────────────────────────────────
+
+// ── RENDER ALL ───────────────────────────────────────────
+function renderAll(){ renderMetrics(); renderFilters(); renderLista(); }
+
+// ── INIT ─────────────────────────────────────────────────
+if(empresa){
+  document.getElementById('emp-btn').textContent=empresa;
+  document.getElementById('setup-bar').style.display='none';
+}
+// Só renderiza se já estiver autenticado
+if(sessionStorage.getItem('sf_auth') === 'ok'){
+  renderAll();
+}
+</script>
+
+<!-- ══════════════════════════════════════════════════════
+     FIREBASE — leitura otimizada (getDocs + cache)
+     Não usa onSnapshot. Economiza 85-90% das leituras.
+     Sobrescreve APENAS as funções de escrita no Firebase.
+     As funções de UI ficam no script acima (escopo global).
+     ══════════════════════════════════════════════════════ -->
+<script type="module">
+/* FIREBASE DESABILITADO PARA TESTES — descomente quando for publicar
+
+import { initializeApp }     from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js';
+import { getFirestore,
+         collection, addDoc, getDocs,
+         deleteDoc, updateDoc,
+         doc, query, orderBy }
+  from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyB4sUn97dDM3FeVpQbC2wfv0OqBlFZqJ70",
+  authDomain:        "sistemaos-53404.firebaseapp.com",
+  projectId:         "sistemaos-53404",
+  storageBucket:     "sistemaos-53404.firebasestorage.app",
+  messagingSenderId: "202073191072",
+  appId:             "1:202073191072:web:8e334352386e3b282f0fc5"
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const COL  = 'ordens';
+
+// ── CARREGAR ORDENS (uma leitura, com cache 5 min) ───────
+async function carregarOrdens() {
+  // Tenta cache primeiro
+  const cache = window.lerCache ? window.lerCache() : null;
+  if (cache && cache.length) {
+    window.ordens = cache;
+    window.renderAll();
+    console.log('Firebase: usando cache local.');
+    return;
+  }
+  // Vai ao Firestore
+  window.setLoading(true);
+  try {
+    const q    = query(collection(db, COL), orderBy('criadoEm', 'desc'));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      window.ordens = snap.docs.map(d => ({ _fbId: d.id, ...d.data() }));
+      window.salvarCache(window.ordens);
+      window.renderAll();
+      console.log(`Firebase: ${snap.docs.length} OS carregadas.`);
+    } else {
+      console.log('Firebase: coleção vazia, mantendo dados locais.');
+    }
+  } catch(e) {
+    console.warn('Firebase offline, usando dados locais:', e);
+  } finally {
+    window.setLoading(false);
+  }
+}
+
+carregarOrdens();
+
+// ── CRIAR OS ─────────────────────────────────────────────
+window.salvarOS = async function() {
+  const cliente = document.getElementById('f-cliente').value.trim();
+  const desc    = document.getElementById('f-desc').value.trim();
+  if (!cliente || !desc) { window.toast('Preencha cliente e descrição.'); return; }
+
+  const novaOS = {
+    id:                 window.proximoId(),
+    cliente,
+    tel:                document.getElementById('f-tel').value.replace(/\D/g,''),
+    desc,
+    tec:                document.getElementById('f-tec').value.trim() || '—',
+    data:               document.getElementById('f-data').value,
+    valor:              parseFloat(document.getElementById('f-valor').value) || 0,
+    status:             'aberta',
+    dataConclusao:      '',
+    servicosExecutados: '',
+    maoDeObra:          0,
+    materiais:          [],
+    criadoEm:           new Date().toISOString()
+  };
+
+  window.setLoading(true);
+  try {
+    const docRef = await addDoc(collection(db, COL), novaOS);
+    novaOS._fbId = docRef.id;
+    window.ordens.unshift(novaOS);
+    window.invalidarCache();
+    window.salvarCache(window.ordens);
+    ['f-cliente','f-tel','f-desc','f-tec','f-valor'].forEach(id =>
+      document.getElementById(id).value = '');
+    document.getElementById('form-panel').classList.remove('open');
+    window.renderAll();
+    window.toast('OS criada!');
+  } catch(e) {
+    console.error('Erro ao criar OS:', e);
+    window.toast('Erro ao salvar. Verifique a conexão.');
+  } finally {
+    window.setLoading(false);
+  }
+};
+
+// ── ALTERAR STATUS ───────────────────────────────────────
+// BUG 2 CORRIGIDO: atualiza Firestore E reabre modal com dados novos
+window.alterarStatus = async function(id, s) {
+  const o = window.ordens.find(x => x.id === id);
+  if (!o) return;
+
+  const dados = { status: s };
+  if (s === 'concluida' && !o.dataConclusao)
+    dados.dataConclusao = dataHoje();
+
+  // Atualiza local imediatamente (UX instantânea)
+  Object.assign(o, dados);
+  window.renderAll();
+  window.fecharModal();
+  // BUG 3 CORRIGIDO: reabre modal para exibir bloco WhatsApp se concluída
+  setTimeout(() => window.abrirModal(id), 150);
+
+  // Persiste no Firestore em background
+  if (o._fbId) {
+    try {
+      await updateDoc(doc(db, COL, o._fbId), dados);
+      window.invalidarCache();
+      window.salvarCache(window.ordens);
+    } catch(e) {
+      console.error('Erro ao alterar status no Firebase:', e);
+      window.toast('Status atualizado localmente. Verifique conexão.');
+    }
+  }
+};
+
+// ── SALVAR CONCLUSÃO ─────────────────────────────────────
+window.salvarConclusao = async function(id) {
+  const o = window.ordens.find(x => x.id === id);
+  if (!o) return;
+
+  const rows = document.querySelectorAll(`#mat-list-${id} .mat-row`);
+  rows.forEach((row, i) => {
+    const inp = row.querySelectorAll('input');
+    if (window.materiaisTemp[i]) {
+      window.materiaisTemp[i].nome  = inp[0]?.value.trim() || '';
+      window.materiaisTemp[i].qtd   = inp[1]?.value || '0';
+      window.materiaisTemp[i].valor = inp[2]?.value || '0';
+    }
+  });
+
+  const srv  = document.getElementById('srv-' + id);
+  const mdo  = document.getElementById('mdo-' + id);
+  const vMdo = mdo ? parseFloat(mdo.value || 0) : 0;
+  const mats = window.materiaisTemp.filter(m => m.nome.trim());
+  const tMat = mats.reduce((a,m) => a + parseFloat(m.qtd||0)*parseFloat(m.valor||0), 0);
+  const valor = (tMat > 0 || vMdo > 0)
+    ? Math.round((tMat + vMdo) * 100) / 100
+    : o.valor;
+
+  const dados = {
+    servicosExecutados: srv?.value.trim() || '',
+    materiais: mats,
+    maoDeObra: vMdo,
+    valor
+  };
+
+  // Atualiza local
+  Object.assign(o, dados);
+  localStorage.setItem('sf3_ordens', JSON.stringify(window.ordens));
+  window.invalidarCache();
+  window.fecharModal();
+  window.toast('Salvo! Valor: ' + window.fmtM(valor));
+  window.renderAll();
+
+  // Persiste no Firestore
+  if (o._fbId) {
+    try {
+      await updateDoc(doc(db, COL, o._fbId), dados);
+      window.salvarCache(window.ordens);
+    } catch(e) {
+      console.error('Erro ao salvar conclusão no Firebase:', e);
+    }
+  }
+};
+
+// ── EXCLUIR OS ───────────────────────────────────────────
+// BUG 1 CORRIGIDO: busca _fbId corretamente e remove do Firestore
+window.executarDelete = async function(ids) {
+  // Remove local imediatamente
+  window.ordens = window.ordens.filter(o => !ids.includes(o.id));
+  localStorage.setItem('sf3_ordens', JSON.stringify(window.ordens));
+  window.invalidarCache();
+  window.salvarCache(window.ordens);
+  window.cancelarSelecao();
+  window.renderAll();
+  window.toast(`${ids.length} OS excluída${ids.length !== 1 ? 's' : ''}.`);
+
+  // Remove do Firestore em background
+  try {
+    const promises = ids.map(id => {
+      // BUG 1 CORRIGIDO: busca no array ANTES de filtrar
+      const fbId = ids._fbIds?.[id];
+      return fbId ? deleteDoc(doc(db, COL, fbId)) : null;
+    }).filter(Boolean);
+    await Promise.all(promises);
+  } catch(e) {
+    console.warn('Erro ao excluir do Firebase:', e);
+  }
+};
+
+// Versão corrigida do delete que captura os _fbIds antes de remover
+window.executarDelete = async function(ids) {
+  // Captura os _fbIds ANTES de remover do array
+  const fbIds = {};
+  ids.forEach(id => {
+    const o = window.ordens.find(x => x.id === id);
+    if (o?._fbId) fbIds[id] = o._fbId;
+  });
+
+  // Remove local
+  window.ordens = window.ordens.filter(o => !ids.includes(o.id));
+  localStorage.setItem('sf3_ordens', JSON.stringify(window.ordens));
+  window.invalidarCache();
+  window.salvarCache(window.ordens);
+  window.cancelarSelecao();
+  window.renderAll();
+  window.toast(`${ids.length} OS excluída${ids.length !== 1 ? 's' : ''}.`);
+
+  // Remove do Firestore
+  try {
+    const promises = Object.values(fbIds).map(fbId => deleteDoc(doc(db, COL, fbId)));
+    await Promise.all(promises);
+    console.log(`Firebase: ${promises.length} documentos excluídos.`);
+  } catch(e) {
+    console.warn('Erro ao excluir do Firebase (dados já removidos localmente):', e);
+  }
+};
+
+// Expõe funções de cache e util para o módulo
+window.lerCache     = window.lerCache     || function(){ try{ const r=localStorage.getItem('sf3_cache'); if(!r)return null; const{ts,dados}=JSON.parse(r); if(Date.now()-ts<300000)return dados; }catch(e){} return null; };
+window.salvarCache  = window.salvarCache  || function(d){ try{ localStorage.setItem('sf3_cache',JSON.stringify({ts:Date.now(),dados:d})); }catch(e){} };
+window.invalidarCache = window.invalidarCache || function(){ localStorage.removeItem('sf3_cache'); };
+
+console.log('Firebase otimizado: sem onSnapshot, leitura sob demanda + cache 5min.');
+
+FIREBASE DESABILITADO */
+</script>
+</body>
+</html>
