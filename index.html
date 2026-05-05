@@ -369,6 +369,7 @@ input,select,textarea,button{font-family:'IBM Plex Sans',sans-serif;font-size:15
 <div class="hdr">
   <div class="logo">Serviço<span>Fácil</span></div>
   <div class="hdr-right">
+    <span style="font-size:10px;color:#6b6a65;font-family:'IBM Plex Mono',monospace">v26</span>
     <button class="emp-btn" id="emp-btn" onclick="editarEmpresa()">Configurar empresa</button>
   </div>
 </div>
@@ -570,6 +571,10 @@ input,select,textarea,button{font-family:'IBM Plex Sans',sans-serif;font-size:15
       <div class="form-grid">
         <div class="field"><label>Data de emissão</label><input type="date" id="of-emissao"></div>
         <div class="field"><label>Válido até *</label><input type="date" id="of-validade"></div>
+      </div>
+      <div class="field">
+        <label>Previsão de entrega do serviço</label>
+        <input type="date" id="of-entrega" placeholder="Quando o serviço estará pronto">
       </div>
       <div class="form-divider">Itens / Materiais</div>
       <div style="display:grid;grid-template-columns:1fr 72px 90px 36px;gap:6px;margin-bottom:4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace">
@@ -2410,6 +2415,7 @@ function renderOrcLista(){
           <div class="os-meta">
             ${o.tec||''}
             ${o.emissao?' · Emitido: '+fmt(o.emissao):''}
+            ${o.entrega?' · Entrega: '+fmt(o.entrega):''}
             ${o.validade?' · Válido até: '+fmt(o.validade):''}
             ${vencido?'<span style="color:var(--red);font-weight:600"> · VENCIDO</span>':''}
             ${dias!==null&&dias>=0&&dias<=3&&o.status==='enviado'?`<span style="color:var(--amber);font-weight:600"> · Vence em ${dias}d</span>`:''}
@@ -2563,6 +2569,7 @@ function salvarOrc(){
     desc,
     emissao:   document.getElementById('of-emissao').value,
     validade,
+    entrega:   document.getElementById('of-entrega').value, // previsão de entrega do serviço
     itens,
     maoDeObra: mdo,
     total:     itensTot + mdo,
@@ -2640,6 +2647,9 @@ function abrirModalOrc(id){
       <span class="detail-val" style="color:${vencido?'var(--red)':dias!==null&&dias<=3&&dias>=0?'var(--amber)':'inherit'};font-weight:${vencido||dias!==null&&dias<=3?'600':'400'}">
         ${fmt(o.validade)}${vencido?' (VENCIDO)':dias!==null&&dias<=3&&dias>=0?' ('+dias+'d)':''}
       </span>
+    </div>
+    <div class="detail-row"><span class="detail-key">Prev. entrega</span>
+      <span class="detail-val">${o.entrega ? fmt(o.entrega) : '—'}</span>
     </div>
     ${o.obs?`<div class="detail-row" style="flex-direction:column;gap:4px"><span class="detail-key">Observações</span><span class="detail-val full">${o.obs}</span></div>`:''}
 
@@ -2728,7 +2738,7 @@ function converterOrcEmOS(id){
     tel:                o.tel,
     desc:               o.desc,
     tec:                o.tec,
-    data:               o.validade, // data prevista = validade do orçamento
+    data:               o.entrega || o.validade, // data prevista = previsão de entrega
     valor:              totalOrc(o),
     status:             'aberta',
     dataConclusao:      '',
@@ -2763,7 +2773,7 @@ function converterOrcEmOS(id){
 function enviarOrcWpp(id){
   const o = window.orcamentos.find(x=>x.id===id); if(!o) return;
   const tot = totalOrc(o);
-  const msg = `Olá, ${o.cliente}! 😊\n\nAqui é *${empresa||'nossa empresa'}*.\n\nSegue o orçamento *${o.id}* para o serviço:\n\n📋 *${o.desc}*\n💰 Valor total: *${fmtM(tot)}*\n📅 Válido até: *${fmt(o.validade)}*\n\n${o.obs?'📝 '+o.obs+'\n\n':''}Aguardamos sua confirmação! 🙏`;
+  const msg = `Olá, ${o.cliente}! 😊\n\nAqui é *${empresa||'nossa empresa'}*.\n\nSegue o orçamento *${o.id}* para o serviço:\n\n📋 *${o.desc}*\n💰 Valor total: *${fmtM(tot)}*\n${o.entrega?'🔧 Previsão de entrega: *'+fmt(o.entrega)+'*\n':''}📅 Orçamento válido até: *${fmt(o.validade)}*\n\n${o.obs?'📝 '+o.obs+'\n\n':''}Aguardamos sua confirmação! 🙏`;
 
   window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
 
@@ -2850,6 +2860,10 @@ function ativarEdicaoOrc(id){
         <input type="date" id="oed-validade" value="${o.validade||''}">
       </div>
     </div>
+    <div class="edit-field">
+      <label>Previsão de entrega do serviço</label>
+      <input type="date" id="oed-entrega" value="${o.entrega||''}">
+    </div>
 
     <div class="form-divider">Itens / Materiais</div>
     <div style="display:grid;grid-template-columns:1fr 72px 90px 36px;gap:6px;margin-bottom:4px;
@@ -2933,6 +2947,7 @@ function salvarEdicaoOrc(id){
   o.desc      = desc;
   o.emissao   = document.getElementById('oed-emissao')?.value||'';
   o.validade  = document.getElementById('oed-validade')?.value||'';
+  o.entrega   = document.getElementById('oed-entrega')?.value||'';
   o.itens     = itens;
   o.maoDeObra = mdo;
   o.total     = itensTot + mdo;
