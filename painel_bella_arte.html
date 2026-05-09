@@ -698,21 +698,30 @@ async function carregarAgendamentos() {
   }
 }
 
+// CORREÇÃO: gera string de data local sem conversão de fuso horário
+function isoData(d) {
+  const ano = d.getFullYear();
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
 function fmt(d) { return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}); }
 function fmtDia(d) { return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'2-digit'}); }
-function isoData(d) { return d.toISOString().split('T')[0]; }
 
 function getIntervalo() {
   const ini = new Date(dataBase);
   const fim = new Date(dataBase);
-  if (visAtual === 'dia') { }
-  else if (visAtual === 'semana') {
+  if (visAtual === 'dia') {
+    // ini e fim são o mesmo dia — correto
+  } else if (visAtual === 'semana') {
     const dow = ini.getDay();
     ini.setDate(ini.getDate() - (dow === 0 ? 6 : dow - 1));
     fim.setDate(ini.getDate() + 6);
   } else {
     ini.setDate(1);
-    fim.setMonth(fim.getMonth() + 1); fim.setDate(0);
+    fim.setMonth(fim.getMonth() + 1);
+    fim.setDate(0);
   }
   return { ini, fim };
 }
