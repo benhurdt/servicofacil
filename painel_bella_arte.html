@@ -691,7 +691,7 @@ async function iniciar() {
 // AGENDA
 async function carregarAgendamentos() {
   try {
-    agendamentos = await supaFetch('agendamentos', 'select=*&order=data.asc&limit=500');
+    agendamentos = await supaFetch('agendamentos', 'select=*&order=dados.asc&limit=500');
     document.getElementById('agenda-atualizado').textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   } catch(e) {
     agendamentos = [];
@@ -754,7 +754,7 @@ function renderTabela() {
   const { ini, fim } = getIntervalo();
   const iniStr = isoData(ini);
   const fimStr = isoData(fim);
-  const filtrados = agendamentos.filter(a => a.data >= iniStr && a.data <= fimStr && a.status !== 'bloqueado');
+  const filtrados = agendamentos.filter(a => a.dados >= iniStr && a.dados <= fimStr && a.status !== 'bloqueado');
 
   const wrap = document.getElementById('tabela-agenda');
 
@@ -771,7 +771,7 @@ function renderTabela() {
     const statusClass = 'status-' + (a.status || 'livre');
     const statusLabel = a.status === 'confirmado' ? 'Confirmado' : a.status === 'livre' ? 'Disponível' : a.status === 'cancelado' ? 'Cancelado' : a.status;
     html += `<tr>
-      <td>${fmtDia(a.data)}</td>
+      <td>${fmtDia(a.dados)}</td>
       <td>${a.hora_inicio} – ${a.hora_fim}</td>
       <td>${a.nome_cliente || '—'}</td>
       <td>${a.servico || '—'}</td>
@@ -792,8 +792,8 @@ function carregarCards() {
   const fimMes = isoData(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
 
   const confirmados = agendamentos.filter(a => a.status === 'confirmado');
-  document.getElementById('card-hoje').textContent = confirmados.filter(a => a.data === hoje).length;
-  document.getElementById('card-semana').textContent = confirmados.filter(a => a.data >= isoData(inicioSemana) && a.data <= isoData(fimSemana)).length;
+  document.getElementById('card-hoje').textContent = confirmados.filter(a => a.dados === hoje).length;
+  document.getElementById('card-semana').textContent = confirmados.filter(a => a.dados >= isoData(inicioSemana) && a.dados <= isoData(fimSemana)).length;
   document.getElementById('card-mes').textContent = confirmados.filter(a => a.data >= inicioMes && a.data <= fimMes).length;
   document.getElementById('card-confirmados').textContent = confirmados.length;
 }
@@ -878,3 +878,4 @@ atualizarLabel();
 </script>
 </body>
 </html>
+
