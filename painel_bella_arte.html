@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Salão Bella Arte</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rosa: #c9788a;
+    --rosa-claro: #f5e6ea;
+    --rosa-escuro: #a05568;
+    --creme: #fdf8f5;
+    --creme2: #f5ede8;
+    --marrom: #3d2c2c;
+    --marrom-claro: #7a5c5c;
+    --verde: #4a8c6a;
+    --verde-claro: #e8f5ee;
+    --ambar: #c4872a;
+    --ambar-claro: #fdf0dc;
+    --azul: #3a6ea8;
+    --azul-claro: #e6f0fa;
+    --cinza: #8a7f7f;
+    --borda: #e8ddd8;
+    --sombra: 0 2px 16px rgba(61,44,44,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--creme);
+    color: var(--marrom);
+    min-height: 100vh;
+  }
+
+  /* LOGIN */
+  #tela-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3d2c2c 0%, #c9788a 100%);
+  }
+
+  .login-box {
+    background: white;
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 360px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .login-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--marrom);
+    margin-bottom: 4px;
+  }
+
+  .login-sub {
+    font-size: 13px;
+    color: var(--cinza);
+    margin-bottom: 32px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .login-box input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--borda);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--creme);
+    color: var(--marrom);
+  }
+
+  .login-box input:focus { border-color: var(--rosa); }
+
+  .btn-login {
+    width: 100%;
+    padding: 14px;
+    background: var(--rosa);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-login:hover { background: var(--rosa-escuro); }
+  .btn-login:active { transform: scale(0.98); }
+
+  .login-erro {
+    color: #c0392b;
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  /* PAINEL */
+  #painel { display: none; }
+
+  /* HEADER */
+  .header {
+    background: var(--marrom);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: white;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .header-logo span { color: var(--rosa); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .badge-online {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #7FD99A;
+    font-weight: 500;
+  }
+
+  .dot-online {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #7FD99A;
+    animation: pulsar 2s infinite;
+  }
+
+  @keyframes pulsar {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .btn-sair {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-sair:hover { background: rgba(255,255,255,0.2); }
+
+  /* ABAS */
+  .abas {
+    background: white;
+    border-bottom: 1px solid var(--borda);
+    padding: 0 32px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .aba {
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--cinza);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .aba:hover { color: var(--rosa); }
+  .aba.ativa { color: var(--rosa); border-bottom-color: var(--rosa); }
+
+  /* CONTEÚDO */
+  .conteudo {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+
+  .secao { display: none; }
+  .secao.ativa { display: block; }
+
+  /* CARDS DE RESUMO */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .card-resumo {
+    background: white;
+    border-radius: 14px;
+    padding: 20px 22px;
+    border: 1px solid var(--borda);
+    box-shadow: var(--sombra);
+  }
+
+  .card-resumo .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--cinza);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .card-resumo .numero {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--marrom);
+    line-height: 1;
+  }
+
+  .card-resumo .detalhe {
+    font-size: 12px;
+    color: var(--cinza);
+    margin-top: 6px;
+  }
+
+  /* AGENDA */
+  .agenda-controles {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-vis {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--borda);
+    background: white;
+    color: var(--marrom);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-vis.ativo { background: var(--rosa); color: white; border-color: var(--rosa); }
+  .btn-vis:hover:not(.ativo) { border-color: var(--rosa); color: var(--rosa); }
+
+  .btn-nav {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1.5px solid var(--borda);
+    background: white;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    color: var(--marrom);
+  }
+
+  .btn-nav:hover { border-color: var(--rosa); color: var(--rosa); }
+
+  .periodo-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--marrom);
+    min-width: 180px;
+    text-align: center;
+  }
+
+  /* TABELA AGENDA */
+  .tabela-wrap {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--borda);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    background: var(--creme2);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--marrom-claro);
+    font-weight: 600;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--borda);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--creme); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--marrom);
+    vertical-align: middle;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-confirmado { background: var(--verde-claro); color: var(--verde); }
+  .status-livre { background: var(--azul-claro); color: var(--azul); }
+  .status-bloqueado { background: #f0f0f0; color: #888; }
+  .status-cancelado { background: #fdecea; color: #c0392b; }
+
+  /* NOTIFICAÇÕES */
+  .notif-lista { display: flex; flex-direction: column; gap: 12px; }
+
+  .notif-item {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid var(--borda);
+    border-left: 4px solid var(--rosa);
+    box-shadow: var(--sombra);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    animation: entrar 0.3s ease;
+  }
+
+  @keyframes entrar {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .notif-icone {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--rosa-claro);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .notif-texto { flex: 1; }
+  .notif-titulo { font-weight: 600; font-size: 14px; color: var(--marrom); margin-bottom: 3px; }
+  .notif-detalhe { font-size: 13px; color: var(--cinza); }
+  .notif-hora { font-size: 11px; color: var(--cinza); white-space: nowrap; margin-top: 2px; }
+
+  /* HISTÓRICO */
+  .hist-busca {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .hist-busca input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1.5px solid var(--borda);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--marrom);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .hist-busca input:focus { border-color: var(--rosa); }
+
+  .btn-buscar {
+    padding: 10px 20px;
+    background: var(--rosa);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-buscar:hover { background: var(--rosa-escuro); }
+
+  .hist-cliente {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--borda);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+  }
+
+  .hist-header {
+    background: var(--creme2);
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .hist-nome { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: var(--marrom); }
+  .hist-info { font-size: 13px; color: var(--cinza); margin-top: 2px; }
+
+  .hist-msgs { padding: 16px 20px; max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+  .msg-bubble {
+    max-width: 72%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .msg-user {
+    background: var(--creme2);
+    color: var(--marrom);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg-assistant {
+    background: var(--rosa);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-hora {
+    font-size: 10px;
+    opacity: 0.6;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--cinza);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-txt { font-size: 15px; }
+
+  /* LOADING */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--cinza);
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--borda);
+    border-top-color: var(--rosa);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .titulo-secao {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--marrom);
+    margin-bottom: 20px;
+  }
+
+  .atualizado-em {
+    font-size: 12px;
+    color: var(--cinza);
+    margin-left: auto;
+  }
+
+  @media (max-width: 640px) {
+    .header { padding: 0 16px; }
+    .abas { padding: 0 16px; overflow-x: auto; }
+    .conteudo { padding: 20px 16px; }
+    .cards-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="tela-login">
+  <div class="login-box">
+    <div class="login-logo">Bella Arte</div>
+    <div class="login-sub">Painel de Gestão</div>
+    <input type="password" id="campo-senha" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter') entrar()">
+    <button class="btn-login" onclick="entrar()">Entrar</button>
+    <div class="login-erro" id="erro-login">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<!-- PAINEL PRINCIPAL -->
+<div id="painel">
+
+  <div class="header">
+    <div class="header-logo">Bella <span>Arte</span></div>
+    <div class="header-right">
+      <div class="badge-online"><div class="dot-online"></div> Bia online</div>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </div>
+
+  <div class="abas">
+    <div class="aba ativa" onclick="mudarAba('agenda', this)">📅 Agenda</div>
+    <div class="aba" onclick="mudarAba('notificacoes', this)">🔔 Notificações <span id="badge-notif" style="display:none;background:var(--rosa);color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;"></span></div>
+    <div class="aba" onclick="mudarAba('historico', this)">💬 Histórico</div>
+  </div>
+
+  <div class="conteudo">
+
+    <!-- AGENDA -->
+    <div id="sec-agenda" class="secao ativa">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+        <h2 class="titulo-secao" style="margin:0">Agenda</h2>
+        <span class="atualizado-em" id="agenda-atualizado"></span>
+      </div>
+
+      <div class="cards-grid" id="cards-agenda">
+        <div class="card-resumo">
+          <div class="label">Hoje</div>
+          <div class="numero" id="card-hoje">—</div>
+          <div class="detalhe">agendamentos</div>
+        </div>
+        <div class="card-resumo">
+          <div class="label">Esta semana</div>
+          <div class="numero" id="card-semana">—</div>
+          <div class="detalhe">agendamentos</div>
+        </div>
+        <div class="card-resumo">
+          <div class="label">Este mês</div>
+          <div class="numero" id="card-mes">—</div>
+          <div class="detalhe">agendamentos</div>
+        </div>
+        <div class="card-resumo">
+          <div class="label">Confirmados</div>
+          <div class="numero" id="card-confirmados">—</div>
+          <div class="detalhe">no período</div>
+        </div>
+      </div>
+
+      <div class="agenda-controles">
+        <button class="btn-vis ativo" id="btn-dia" onclick="mudarVis('dia')">Dia</button>
+        <button class="btn-vis" id="btn-semana" onclick="mudarVis('semana')">Semana</button>
+        <button class="btn-vis" id="btn-mes" onclick="mudarVis('mes')">Mês</button>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+          <button class="btn-nav" onclick="navegar(-1)">‹</button>
+          <span class="periodo-label" id="label-periodo"></span>
+          <button class="btn-nav" onclick="navegar(1)">›</button>
+        </div>
+      </div>
+
+      <div class="tabela-wrap" id="tabela-agenda">
+        <div class="loading"><div class="spinner"></div>Carregando agenda...</div>
+      </div>
+    </div>
+
+    <!-- NOTIFICAÇÕES -->
+    <div id="sec-notificacoes" class="secao">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <h2 class="titulo-secao" style="margin:0">Notificações</h2>
+        <button class="btn-vis" onclick="carregarNotificacoes()" style="margin-left:auto">↻ Atualizar</button>
+      </div>
+      <div class="notif-lista" id="lista-notificacoes">
+        <div class="loading"><div class="spinner"></div>Carregando...</div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="sec-historico" class="secao">
+      <h2 class="titulo-secao">Histórico de Conversas</h2>
+      <div class="hist-busca">
+        <input type="text" id="campo-telefone" placeholder="Digite o telefone do cliente (ex: 51999990001)" onkeydown="if(event.key==='Enter') buscarHistorico()">
+        <button class="btn-buscar" onclick="buscarHistorico()">Buscar</button>
+      </div>
+      <div id="resultado-historico">
+        <div class="empty">
+          <div class="empty-icon">💬</div>
+          <div class="empty-txt">Digite o telefone de um cliente para ver o histórico de conversas com a Bia.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://lojtepimzvophpbdohly.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvanRlcGltenZvcGhwYmRvaGx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0ODMzNDAsImV4cCI6MjA2MjA1OTM0MH0.7_QcqJTFIkd5JCPcm7ixmKH3gPFy9Hb93bPU8BYVFRI';
+const SENHA = 'salao2026';
+
+const headers = {
+  'apikey': ANON_KEY,
+  'Authorization': 'Bearer ' + ANON_KEY,
+  'Content-Type': 'application/json'
+};
+
+let visAtual = 'dia';
+let dataBase = new Date();
+dataBase.setHours(0,0,0,0);
+let agendamentos = [];
+
+// LOGIN
+function entrar() {
+  const senha = document.getElementById('campo-senha').value;
+  if (senha === SENHA) {
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('painel').style.display = 'block';
+    iniciar();
+  } else {
+    document.getElementById('erro-login').style.display = 'block';
+    document.getElementById('campo-senha').value = '';
+  }
+}
+
+function sair() {
+  document.getElementById('tela-login').style.display = 'flex';
+  document.getElementById('painel').style.display = 'none';
+  document.getElementById('campo-senha').value = '';
+}
+
+// ABAS
+function mudarAba(aba, el) {
+  document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+  document.querySelectorAll('.secao').forEach(s => s.classList.remove('ativa'));
+  el.classList.add('ativa');
+  document.getElementById('sec-' + aba).classList.add('ativa');
+  if (aba === 'notificacoes') carregarNotificacoes();
+}
+
+// SUPABASE FETCH
+async function supaFetch(tabela, params) {
+  const url = SUPABASE_URL + '/rest/v1/' + tabela + '?' + params;
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error('Erro Supabase: ' + res.status);
+  return res.json();
+}
+
+// INICIAR
+async function iniciar() {
+  await carregarAgendamentos();
+  atualizarLabel();
+  renderTabela();
+  carregarCards();
+}
+
+// AGENDA
+async function carregarAgendamentos() {
+  try {
+    agendamentos = await supaFetch('agendamentos', 'select=*&order=data.asc&limit=500');
+    document.getElementById('agenda-atualizado').textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    agendamentos = [];
+  }
+}
+
+function fmt(d) { return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}); }
+function fmtDia(d) { return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', {weekday:'short',day:'2-digit',month:'2-digit'}); }
+function isoData(d) { return d.toISOString().split('T')[0]; }
+
+function getIntervalo() {
+  const ini = new Date(dataBase);
+  const fim = new Date(dataBase);
+  if (visAtual === 'dia') { }
+  else if (visAtual === 'semana') {
+    const dow = ini.getDay();
+    ini.setDate(ini.getDate() - (dow === 0 ? 6 : dow - 1));
+    fim.setDate(ini.getDate() + 6);
+  } else {
+    ini.setDate(1);
+    fim.setMonth(fim.getMonth() + 1); fim.setDate(0);
+  }
+  return { ini, fim };
+}
+
+function atualizarLabel() {
+  const { ini, fim } = getIntervalo();
+  const el = document.getElementById('label-periodo');
+  if (visAtual === 'dia') el.textContent = ini.toLocaleDateString('pt-BR', {weekday:'long',day:'2-digit',month:'long'});
+  else if (visAtual === 'semana') el.textContent = fmt(isoData(ini)) + ' — ' + fmt(isoData(fim));
+  else el.textContent = ini.toLocaleDateString('pt-BR', {month:'long',year:'numeric'});
+}
+
+function navegar(dir) {
+  if (visAtual === 'dia') dataBase.setDate(dataBase.getDate() + dir);
+  else if (visAtual === 'semana') dataBase.setDate(dataBase.getDate() + dir * 7);
+  else dataBase.setMonth(dataBase.getMonth() + dir);
+  atualizarLabel();
+  renderTabela();
+}
+
+function mudarVis(v) {
+  visAtual = v;
+  ['dia','semana','mes'].forEach(x => document.getElementById('btn-' + x).classList.toggle('ativo', x === v));
+  dataBase = new Date(); dataBase.setHours(0,0,0,0);
+  atualizarLabel();
+  renderTabela();
+}
+
+function renderTabela() {
+  const { ini, fim } = getIntervalo();
+  const iniStr = isoData(ini);
+  const fimStr = isoData(fim);
+  const filtrados = agendamentos.filter(a => a.data >= iniStr && a.data <= fimStr && a.status !== 'bloqueado');
+
+  const wrap = document.getElementById('tabela-agenda');
+
+  if (filtrados.length === 0) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-txt">Nenhum agendamento neste período.</div></div>';
+    return;
+  }
+
+  let html = '<table><thead><tr>';
+  html += '<th>Data</th><th>Horário</th><th>Cliente</th><th>Serviço</th><th>Profissional</th><th>Status</th>';
+  html += '</tr></thead><tbody>';
+
+  filtrados.forEach(a => {
+    const statusClass = 'status-' + (a.status || 'livre');
+    const statusLabel = a.status === 'confirmado' ? 'Confirmado' : a.status === 'livre' ? 'Disponível' : a.status === 'cancelado' ? 'Cancelado' : a.status;
+    html += `<tr>
+      <td>${fmtDia(a.data)}</td>
+      <td>${a.hora_inicio} – ${a.hora_fim}</td>
+      <td>${a.nome_cliente || '—'}</td>
+      <td>${a.servico || '—'}</td>
+      <td>${a.profissional || '—'}</td>
+      <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function carregarCards() {
+  const hoje = isoData(new Date());
+  const inicioSemana = new Date(); inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay() + 1);
+  const fimSemana = new Date(inicioSemana); fimSemana.setDate(inicioSemana.getDate() + 6);
+  const inicioMes = isoData(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const fimMes = isoData(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
+
+  const confirmados = agendamentos.filter(a => a.status === 'confirmado');
+  document.getElementById('card-hoje').textContent = confirmados.filter(a => a.data === hoje).length;
+  document.getElementById('card-semana').textContent = confirmados.filter(a => a.data >= isoData(inicioSemana) && a.data <= isoData(fimSemana)).length;
+  document.getElementById('card-mes').textContent = confirmados.filter(a => a.data >= inicioMes && a.data <= fimMes).length;
+  document.getElementById('card-confirmados').textContent = confirmados.length;
+}
+
+// NOTIFICAÇÕES (últimas conversas do histórico)
+async function carregarNotificacoes() {
+  const lista = document.getElementById('lista-notificacoes');
+  lista.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+  try {
+    const dados = await supaFetch('historico_conversas', 'select=*&order=criado_em.desc&limit=20');
+    if (dados.length === 0) {
+      lista.innerHTML = '<div class="empty"><div class="empty-icon">🔔</div><div class="empty-txt">Nenhuma notificação ainda.</div></div>';
+      return;
+    }
+    const badge = document.getElementById('badge-notif');
+    badge.textContent = dados.length;
+    badge.style.display = 'inline';
+
+    lista.innerHTML = dados.map(d => {
+      const isAssistant = d.role === 'assistant' || d.papel === 'assistente';
+      const icone = isAssistant ? '🌸' : '💬';
+      const quem = isAssistant ? 'Bia respondeu' : 'Cliente enviou';
+      const hora = new Date(d.criado_em).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const tel = d.telefone || '';
+      const msg = (d.content || d.contente || '').substring(0, 80) + ((d.content || d.contente || '').length > 80 ? '...' : '');
+      return `<div class="notif-item">
+        <div class="notif-icone">${icone}</div>
+        <div class="notif-texto">
+          <div class="notif-titulo">${quem} <span style="color:var(--cinza);font-weight:400;font-size:12px">· ${tel}</span></div>
+          <div class="notif-detalhe">${msg}</div>
+        </div>
+        <div class="notif-hora">${hora}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    lista.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-txt">Erro ao carregar notificações.</div></div>';
+  }
+}
+
+// HISTÓRICO
+async function buscarHistorico() {
+  const tel = document.getElementById('campo-telefone').value.trim().replace(/\D/g,'');
+  if (!tel) return;
+  const res = document.getElementById('resultado-historico');
+  res.innerHTML = '<div class="loading"><div class="spinner"></div>Buscando...</div>';
+  try {
+    const [msgs, clientes] = await Promise.all([
+      supaFetch('historico_conversas', `telefone=eq.${tel}&order=criado_em.asc&limit=50`),
+      supaFetch('clientes', `telefone=eq.${tel}&limit=1`)
+    ]);
+    const cliente = clientes[0];
+    if (msgs.length === 0) {
+      res.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-txt">Nenhuma conversa encontrada para este número.</div></div>';
+      return;
+    }
+    const nome = cliente ? cliente.nome : 'Cliente ' + tel;
+    const info = cliente ? `Último serviço: ${cliente.ultimo_servico || '—'}  ·  Visitas: ${cliente.total_visitas || 0}` : tel;
+    const bubblesHtml = msgs.map(m => {
+      const isAssist = m.role === 'assistant' || m.papel === 'assistente';
+      const hora = new Date(m.criado_em).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+      const texto = m.content || m.contente || '';
+      return `<div class="msg-bubble ${isAssist ? 'msg-assistant' : 'msg-user'}">
+        ${texto}
+        <span class="msg-hora">${hora}</span>
+      </div>`;
+    }).join('');
+    res.innerHTML = `<div class="hist-cliente">
+      <div class="hist-header">
+        <div class="hist-nome">${nome}</div>
+        <div class="hist-info">${info}</div>
+      </div>
+      <div class="hist-msgs">${bubblesHtml}</div>
+    </div>`;
+    res.querySelector('.hist-msgs').scrollTop = 99999;
+  } catch(e) {
+    res.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-txt">Erro ao buscar histórico.</div></div>';
+  }
+}
+
+// INICIALIZAR LABEL
+atualizarLabel();
+</script>
+</body>
+</html>
