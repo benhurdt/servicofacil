@@ -754,7 +754,19 @@ function renderTabela() {
   const { ini, fim } = getIntervalo();
   const iniStr = isoData(ini);
   const fimStr = isoData(fim);
-  const filtrados = agendamentos.filter(a => a.data >= iniStr && a.data <= fimStr && a.status !== 'bloqueado');
+  const porPeriodo = agendamentos.filter(a => a.data >= iniStr && a.data <= fimStr && a.status !== 'bloqueado');
+
+  // Deduplica: mantém apenas o registro mais recente por cliente + data + hora
+  const vistos = {};
+  const filtrados = [];
+  // agendamentos já vem ordenado por data asc — percorre ao contrário para pegar o mais recente
+  [...porPeriodo].reverse().forEach(a => {
+    const chave = (a.telefone_cliente || a.nome_cliente || '') + '_' + a.data + '_' + a.hora_inicio;
+    if (!vistos[chave]) {
+      vistos[chave] = true;
+      filtrados.unshift(a);
+    }
+  });
 
   const wrap = document.getElementById('tabela-agenda');
 
