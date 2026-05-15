@@ -812,7 +812,7 @@ function renderMetrics(){
 
 // ── FILTROS E LISTA OS ───────────────────────────────────
 let filtro='todas',modoSel=false,selecionadas=new Set(),materiaisTemp=[];
-let msgTemplate='Olá, {cliente}! 😊\n\nAqui é *{empresa}*.\n\nO serviço *{servico}* ({os}) foi concluído!\n\nValor: *{valor}*\n\nObrigado pela confiança! 🙏';
+let msgTemplate='Olá, {cliente}!\n\nAqui é *{empresa}*.\n\nO serviço *{servico}* ({os}) foi concluído!\n\nValor: *{valor}*\n\nObrigado pela confiança!';
 
 function renderFilters(){
   const opts=[{k:'todas',l:'Todas'},{k:'aberta',l:'Abertas'},{k:'andamento',l:'Em andamento'},{k:'concluida',l:'Concluídas'},{k:'cancelada',l:'Canceladas'}];
@@ -1051,8 +1051,9 @@ function salvarConclusao(id){
   const mdo=document.getElementById('mdo-'+id);const vMdo=mdo?parseFloat(mdo.value||0):0;
   o.maoDeObra=vMdo;
   if(tMat>0||vMdo>0) o.valor=Math.round((tMat+vMdo)*100)/100;
-  // Abater do estoque
+  // Abater do estoque e atualizar tela imediatamente
   abaterEstoque(o.materiais);
+  renderEstoque();
   localStorage.setItem(OS_KEY,JSON.stringify(window.ordens));invalidarCache();renderAll();fecharModal();
   toast('Salvo! Valor: '+fmtM(o.valor));
 }
@@ -1072,7 +1073,7 @@ function gerarRecibo(id){
   const cabecalho=montarCabecalhoDoc();
   const totalMat=totalMateriais(o.materiais); // exclui isProjeto
   const totalProjeto=(o.materiais||[]).filter(m=>m.isProjeto).reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);
-  const totalGeral=o.valor||0; // valor da OS já inclui tudo
+  const totalGeral=totalMat+(o.maoDeObra||0)+totalProjeto; // recalcula para garantir consistência
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Recibo ${o.id}</title>
   <style>
@@ -1107,12 +1108,17 @@ function gerarRecibo(id){
   </div>
   <div class="box" style="margin-bottom:16px"><div class="label">Descrição do serviço</div><div class="val" style="font-weight:400;line-height:1.6">${o.desc}</div></div>
   ${o.servicosExecutados?`<div class="box" style="margin-bottom:16px"><div class="label">Serviços executados</div><div style="font-size:13px;line-height:1.6">${o.servicosExecutados}</div></div>`:''}
-  ${(()=>{const mats=(o.materiais||[]).filter(m=>!m.isProjeto);const proj=(o.materiais||[]).filter(m=>m.isProjeto);const tMat=mats.reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);const tProj=proj.reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);let h='';if(mats.length)h+=`<table><tr><th>Material / Peça</th><th>Qtd</th><th>Vl. Unit.</th><th>Total</th></tr>${mats.map(m=>`<tr><td>${m.nome}</td><td>${m.qtd}</td><td>R$ ${Number(m.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td>R$ ${(parseFloat(m.qtd||0)*parseFloat(m.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}<tr><td colspan="3" style="font-weight:600">Subtotal materiais</td><td style="font-weight:600">R$ ${tMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr></table>`;if(proj.length)h+=`<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#92400e;margin-bottom:3px">Custo de projeto externo</div>${proj.map(p=>`<div style="font-size:13px;font-weight:600;color:#92400e">${p.nome}: R$ ${(parseFloat(p.qtd||0)*parseFloat(p.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>`).join('')}</div>`;return h;})()}
-  <div class="grid" style="margin-top:8px">
-    <div class="box"><div class="label">Materiais</div><div class="val">R$ ${totalMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
-    <div class="box"><div class="label">Mão de obra</div><div class="val">${fmtM(o.maoDeObra||0)}</div></div>
-    ${totalProjeto>0?`<div class="box" style="background:#fffbeb;border-color:#fde68a;grid-column:1/-1"><div class="label" style="color:#92400e">Custo de projeto externo</div><div class="val" style="color:#92400e">R$ ${totalProjeto.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>`:''}
-    <div class="box" style="border-color:#1a1917;grid-column:1/-1;display:flex;justify-content:space-between;align-items:center"><div class="label">TOTAL GERAL</div><div class="val" style="font-size:22px;color:#1d4ed8">R$ ${totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+  ${(()=>{const mats=(o.materiais||[]).filter(m=>!m.isProjeto);if(!mats.length)return '';const tMat=mats.reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);return `<table><tr><th>Material / Peça</th><th>Qtd</th><th>Vl. Unit.</th><th>Total</th></tr>${mats.map(m=>`<tr><td>${m.nome}</td><td>${m.qtd}</td><td>R$ ${Number(m.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td>R$ ${(parseFloat(m.qtd||0)*parseFloat(m.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}<tr><td colspan="3" style="font-weight:600">Subtotal materiais</td><td style="font-weight:600">R$ ${tMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr></table>`;})()}
+  <div style="margin-top:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="box"><div class="label">Materiais</div><div class="val">R$ ${totalMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+      <div class="box"><div class="label">Mão de obra</div><div class="val">R$ ${Number(o.maoDeObra||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+    </div>
+    ${totalProjeto>0?`<div class="box" style="background:#fffbeb;border:1px solid #fde68a;margin-bottom:8px"><div class="label" style="color:#92400e">Custo de projeto externo</div><div class="val" style="color:#92400e;font-size:15px">R$ ${totalProjeto.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>`:''}
+    <div class="box" style="border:2px solid #1a1917;display:flex;justify-content:space-between;align-items:center;padding:14px">
+      <div class="label" style="font-size:13px;font-weight:700">TOTAL GERAL</div>
+      <div class="val" style="font-size:24px;color:#1d4ed8">R$ ${totalGeral.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+    </div>
   </div>
   <div class="assinaturas">
     <div><div class="ass-line">Prestador de serviços</div></div>
@@ -1121,7 +1127,7 @@ function gerarRecibo(id){
   <div class="footer">ServiçoFácil v27 · Documento gerado em ${new Date().toLocaleString('pt-BR')}</div>
   <div style="margin-top:20px;display:flex;gap:10px">
     <button onclick="window.print()" style="padding:10px 20px;background:#1a1917;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨 Imprimir / Salvar PDF</button>
-    ${o.tel?`<button onclick="const msg='Olá ${o.cliente}! Segue o recibo do serviço ${o.id}.';window.open('https://wa.me/55${o.tel.replace(/\D/g,'')}?text='+encodeURIComponent(msg),'_blank')" style="padding:10px 20px;background:#25D366;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">📱 Enviar pelo WhatsApp</button>`:''}
+    ${o.tel?`<button onclick="const msg='Olá, ${o.cliente}!\n\nSegue o recibo do serviço *${o.id}*.';window.open('https://wa.me/55${o.tel.replace(/\D/g,'')}?text='+encodeURIComponent(msg),'_blank')" style="padding:10px 20px;background:#25D366;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">📱 Enviar pelo WhatsApp</button>`:''}
   </div>
   </body></html>`);
   w.document.close();
@@ -1514,7 +1520,7 @@ function converterOrcEmOS(id){
   const novaOS={id:proximoId(),cliente:o.cliente,tel:o.tel,desc:o.desc,tec:o.tec,data:(()=>{if(o.entrega&&Number(o.entrega)>0){const d=new Date();d.setDate(d.getDate()+Number(o.entrega));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}return o.validade||'';})(),valor:totalOrc(o),status:'aberta',dataConclusao:'',servicosExecutados:'',maoDeObra:o.maoDeObra,materiais,pagamento:null,criadoEm:new Date().toISOString(),orcamentoOrigemId:o.id};
   window.ordens.unshift(novaOS);localStorage.setItem('sf3_ordens',JSON.stringify(window.ordens));invalidarCache();o.status='convertido';o.osGeradaId=novaOS.id;salvarOrcamentos();renderAll();renderAllOrc();fecharModal();toast('✅ OS '+novaOS.id+' criada! Valor: '+fmtM(novaOS.valor));setTimeout(()=>abrirModalOrc(id),300);
 }
-function enviarOrcWpp(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)return;const tot=totalOrc(o);const msg=`Olá, ${o.cliente}! 😊\n\nAqui é *${config.razao||empresa||'nossa empresa'}*.\n\nOrçamento *${o.id}* para:\n\n📋 *${o.desc}*\n💰 Total: *R$ ${tot.toLocaleString('pt-BR',{minimumFractionDigits:2})}*\n${o.entrega?'🔧 Prazo: *'+o.entrega+' dias após aprovação*\n':''}📅 Válido até: *${fmt(o.validade)}*\n\n${o.obs?o.obs+'\n\n':''}Aguardamos sua confirmação! 🙏`;window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');if(o.status==='rascunho'){o.status='enviado';salvarOrcamentos();renderAllOrc();}toast('WhatsApp aberto!');}
+function enviarOrcWpp(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)return;const tot=totalOrc(o);const msg=`Olá, ${o.cliente}!\n\nAqui é *${config.razao||empresa||'nossa empresa'}*.\n\nOrçamento *${o.id}* para:\n\n*${o.desc}*\n\nTotal: *R$ ${tot.toLocaleString('pt-BR',{minimumFractionDigits:2})}*\n${o.entrega?'Prazo: *'+o.entrega+' dias após aprovação*\n':''}Válido até: *${fmt(o.validade)}*\n\n${o.obs?o.obs+'\n\n':''}Aguardamos sua confirmação!`;window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');if(o.status==='rascunho'){o.status='enviado';salvarOrcamentos();renderAllOrc();}toast('WhatsApp aberto!');}
 function excluirOrcUnico(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)return;document.getElementById('confirm-title').textContent='Excluir orçamento';document.getElementById('confirm-msg').textContent=`Excluir "${o.id}"? Irreversível.`;document.getElementById('confirm-ok').onclick=()=>{window.orcamentos=window.orcamentos.filter(x=>x.id!==id);salvarOrcamentos();renderAllOrc();fecharModal();fecharConfirm();toast('Excluído.');};document.getElementById('confirm-overlay').classList.add('open');}
 
 let orcItensEdicao=[];
@@ -1791,8 +1797,12 @@ function gerarPDFContrato(id){
   <div class="subtitulo">Contrato n° ${c.id} · Data: ${fmt(c.data)}</div>
   ${corpo}
   <div class="assinaturas">
-    <div><div class="ass-line">${emp}<br>CONTRATANTE / CONTRATADA</div></div>
-    <div><div class="ass-line">${c.nome}<br>${c.cpf?'CPF/CNPJ: '+c.cpf:'Contratado(a)'}</div></div>
+    ${tipo==='cliente'
+      ? `<div><div class="ass-line">${emp}<br>CONTRATADA</div></div><div><div class="ass-line">${c.nome}${c.cpf?'<br>CPF/CNPJ: '+c.cpf:''}<br>CONTRATANTE</div></div>`
+      : tipo==='projetista'
+      ? `<div><div class="ass-line">${emp}<br>CONTRATANTE</div></div><div><div class="ass-line">${c.nome}${c.cpf?'<br>CPF/CNPJ: '+c.cpf:''}<br>CONTRATADO(A)</div></div>`
+      : `<div><div class="ass-line">${emp}<br>1ª PARTE</div></div><div><div class="ass-line">${c.nome}${c.cpf?'<br>CPF/CNPJ: '+c.cpf:''}<br>2ª PARTE</div></div>`
+    }
   </div>
   <div class="footer">Gerado pelo ServiçoFácil v27 · ${new Date().toLocaleString('pt-BR')}</div>
   <div style="margin-top:20px"><button onclick="window.print()" style="padding:10px 20px;background:#1a1917;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨 Imprimir / Salvar PDF</button></div>
