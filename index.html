@@ -772,7 +772,7 @@ function setPage(p){
   const tabs=document.querySelectorAll('.nav-tab');
   if(idx!==undefined && tabs[idx]) tabs[idx].classList.add('active');
   if(p==='os'){renderAll();}
-  if(p==='materiais'){popularMeses('mes-sel-mat');renderRelMat();}
+  if(p==='materiais'){window.estoque=JSON.parse(localStorage.getItem(EST_KEY)||'[]');popularMeses('mes-sel-mat');renderRelMat();}
   if(p==='recebimentos'){initRecebimentos();}
   if(p==='orcamentos'){renderAllOrc();}
   if(p==='contratos'){renderContratos();}
@@ -794,7 +794,7 @@ function setInnerTab(grupo, tab){
   }
   if(grupo==='os' && tab==='rel'){popularMeses('mes-sel-os');renderRelOS();}
   if(grupo==='mat' && tab==='rel'){popularMeses('mes-sel-mat');renderRelMat();}
-  if(grupo==='mat' && tab==='estoque'){renderEstoque();}
+  if(grupo==='mat' && tab==='estoque'){window.estoque=JSON.parse(localStorage.getItem(EST_KEY)||'[]');renderEstoque();}
 }
 
 // ── MÉTRICAS OS ──────────────────────────────────────────
@@ -1053,6 +1053,7 @@ function salvarConclusao(id){
   if(tMat>0||vMdo>0) o.valor=Math.round((tMat+vMdo)*100)/100;
   // Abater do estoque e atualizar tela imediatamente
   abaterEstoque(o.materiais);
+  window.estoque=JSON.parse(localStorage.getItem(EST_KEY)||'[]');
   renderEstoque();
   localStorage.setItem(OS_KEY,JSON.stringify(window.ordens));invalidarCache();renderAll();fecharModal();
   toast('Salvo! Valor: '+fmtM(o.valor));
