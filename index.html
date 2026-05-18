@@ -1143,7 +1143,30 @@ function gerarRecibo(id){
   </div>
   <div class="box" style="margin-bottom:16px"><div class="label">Descrição do serviço</div><div class="val" style="font-weight:400;line-height:1.6">${o.desc}</div></div>
   ${o.servicosExecutados?`<div class="box" style="margin-bottom:16px"><div class="label">Serviços executados</div><div style="font-size:13px;line-height:1.6">${o.servicosExecutados}</div></div>`:''}
-  ${(()=>{const mats=(o.materiais||[]).filter(m=>!m.isProjeto);if(!mats.length)return '';const tMat=mats.reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);return `<table><tr><th>Material / Peça</th><th>Qtd</th><th>Vl. Unit.</th><th>Total</th></tr>${mats.map(m=>`<tr><td>${m.nome}</td><td>${m.qtd}</td><td>R$ ${Number(m.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td>R$ ${(parseFloat(m.qtd||0)*parseFloat(m.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}<tr><td colspan="3" style="font-weight:600">Subtotal materiais</td><td style="font-weight:600">R$ ${tMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr></table>`;})()}
+  ${(()=>{
+    const mats=(o.materiais||[]).filter(m=>!m.isProjeto);
+    if(!mats.length)return '';
+    const isSimples=mats.some(m=>m.isServico);
+    const tMat=mats.reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);
+    if(isSimples){
+      // Layout simplificado: só Descrição e Valor
+      return `<table style="border-collapse:collapse;width:100%;margin-bottom:12px">
+        <tr><th style="width:76%;text-align:left;padding:6px 8px;border-bottom:2px solid #1a1917;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#9e9c96">Descrição do serviço</th>
+            <th style="width:24%;text-align:right;padding:6px 8px;border-bottom:2px solid #1a1917;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#9e9c96">Valor</th></tr>
+        ${mats.map(m=>`<tr style="border-bottom:1px solid #eeede8">
+          <td style="padding:10px 8px;line-height:1.7;word-break:break-word;overflow-wrap:break-word;white-space:pre-wrap;max-width:0;vertical-align:middle">${(m.nome||'').trim()}</td>
+          <td style="padding:10px 8px;text-align:right;font-weight:600;white-space:nowrap;vertical-align:middle">R$ ${(parseFloat(m.qtd||0)*parseFloat(m.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        </tr>`).join('')}
+        <tr><td style="padding:8px;font-weight:700;border-top:2px solid #1a1917;background:#f5f4f0">Total dos serviços</td>
+            <td style="padding:8px;text-align:right;font-weight:700;border-top:2px solid #1a1917;background:#f5f4f0">R$ ${tMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>
+      </table>`;
+    }
+    // Layout detalhado: Material / Qtd / Vl.Unit / Total
+    return `<table><tr><th>Material / Peça</th><th>Qtd</th><th>Vl. Unit.</th><th>Total</th></tr>
+      ${mats.map(m=>`<tr><td>${m.nome}</td><td>${m.qtd}</td><td>R$ ${Number(m.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td>R$ ${(parseFloat(m.qtd||0)*parseFloat(m.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}
+      <tr><td colspan="3" style="font-weight:600">Subtotal materiais</td><td style="font-weight:600">R$ ${tMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>
+    </table>`;
+  })()}
   <div style="margin-top:8px">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
       <div class="box"><div class="label">Materiais</div><div class="val">R$ ${totalMat.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
@@ -1594,7 +1617,13 @@ function gerarPDFOrcamento(id){
     if(!o.itens||!o.itens.length)return '';
     const isSimples=o.tipo==='simples'||o.itens.some(i=>i.isServico);
     if(isSimples){
-      return `<table><tr><th style="width:80%">Descrição do serviço</th><th style="text-align:right">Valor</th></tr>${o.itens.map(i=>`<tr><td style="line-height:1.6;white-space:pre-wrap">${i.desc}</td><td style="text-align:right;font-weight:600;white-space:nowrap">R$ ${Number(i.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}</table>`;
+      return `<table style="border-collapse:collapse;width:100%">
+        <tr><th style="width:76%;text-align:left;padding:6px 8px;border-bottom:2px solid #1a1917;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#9e9c96">Descrição do serviço</th><th style="width:24%;text-align:right;padding:6px 8px;border-bottom:2px solid #1a1917;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#9e9c96">Valor</th></tr>
+        ${o.itens.map(i=>`<tr style="border-bottom:1px solid #eeede8">
+          <td style="padding:10px 8px;line-height:1.7;word-break:break-word;overflow-wrap:break-word;white-space:pre-wrap;max-width:0;vertical-align:middle">${(i.desc||'').trim()}</td>
+          <td style="padding:10px 8px;text-align:right;font-weight:600;white-space:nowrap;vertical-align:middle;font-size:14px">R$ ${Number(i.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        </tr>`).join('')}
+      </table>`;
     }
     return `<table><tr><th>Descrição</th><th>Qtd</th><th>R$ Unit.</th><th>Total</th></tr>${o.itens.map(i=>`<tr><td>${i.desc}</td><td>${i.qtd}</td><td>R$ ${Number(i.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td>R$ ${(parseFloat(i.qtd||0)*parseFloat(i.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}</table>`;
   })()}
@@ -1702,13 +1731,63 @@ function atualizarTotalOrcEd(){
   if(el)el.textContent=fmtM(tItens+(mdo>0?mdo:0)+(proj>0?proj:0));
 }
 
+function capturarItensEdicao(isSimples){
+  orcItensEdicao.forEach((it,i)=>{
+    const d=document.getElementById('oed-desc-'+i);
+    const v=document.getElementById('oed-val-'+i);
+    if(d)it.desc=d.value;
+    if(v)it.valor=v.value;
+    if(!isSimples){const q=document.getElementById('oed-qtd-'+i);if(q)it.qtd=q.value;}
+  });
+}
+
+function renderItensEdicaoNoLugar(id,isSimples){
+  // Atualiza só a lista de itens sem reabrir o modal inteiro
+  const el=document.getElementById('oed-itens-list');
+  if(!el)return;
+  if(!orcItensEdicao.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">Nenhum item.</div>';
+    return;
+  }
+  if(isSimples){
+    el.innerHTML=orcItensEdicao.map((it,i)=>`<div style="display:grid;grid-template-columns:1fr 100px 36px;gap:6px;margin-bottom:6px;align-items:start">
+      <textarea id="oed-desc-${i}" rows="2" style="font-size:13px;padding:8px 9px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);resize:vertical;min-height:60px;width:100%">${it.desc||''}</textarea>
+      <input type="number" id="oed-val-${i}" value="${it.valor||''}" placeholder="0,00" min="0" step="0.01"
+        style="font-size:13px;padding:8px 9px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:44px;width:100%"
+        oninput="orcItensEdicao[${i}].valor=this.value;atualizarTotalOrcEd()">
+      <button class="btn-rem" onclick="remItemOrcEd(${i},'${id}')">×</button>
+    </div>`).join('');
+  } else {
+    el.innerHTML=orcItensEdicao.map((it,i)=>`<div class="orc-item-row">
+      <input type="text" id="oed-desc-${i}" value="${it.desc||''}" placeholder="Descrição"
+        onchange="orcItensEdicao[${i}].desc=this.value;atualizarTotalOrcEd()">
+      <input type="number" id="oed-qtd-${i}" value="${it.qtd||''}" placeholder="Qtd" min="0" step="any"
+        onchange="orcItensEdicao[${i}].qtd=this.value;atualizarTotalOrcEd()">
+      <input type="number" id="oed-val-${i}" value="${it.valor||''}" placeholder="0,00" min="0" step="any"
+        onchange="orcItensEdicao[${i}].valor=this.value;atualizarTotalOrcEd()">
+      <button class="btn-rem" onclick="remItemOrcEd(${i},'${id}')">×</button>
+    </div>`).join('');
+  }
+  atualizarTotalOrcEd();
+  // Foca no último item adicionado
+  const ultimo=document.getElementById('oed-desc-'+(orcItensEdicao.length-1));
+  if(ultimo)setTimeout(()=>ultimo.focus(),50);
+}
+
 function addItemOrcEd(id){
   const o=window.orcamentos.find(x=>x.id===id);
-  const isSimples=o&&(o.tipo==='simples'||o.itens.some(i=>i.isServico));
+  const isSimples=o&&(o.tipo==='simples'||orcItensEdicao.some(i=>i.isServico));
+  capturarItensEdicao(isSimples);
   orcItensEdicao.push(isSimples?{desc:'',valor:'',isServico:true}:{desc:'',qtd:'1',valor:''});
-  ativarEdicaoOrc(id);
+  renderItensEdicaoNoLugar(id,isSimples);
 }
-function remItemOrcEd(i,id){orcItensEdicao.splice(i,1);ativarEdicaoOrc(id);}
+function remItemOrcEd(i,id){
+  const o=window.orcamentos.find(x=>x.id===id);
+  const isSimples=o&&(o.tipo==='simples'||orcItensEdicao.some(i=>i.isServico));
+  capturarItensEdicao(isSimples);
+  orcItensEdicao.splice(i,1);
+  renderItensEdicaoNoLugar(id,isSimples);
+}
 
 function salvarEdicaoOrc(id){
   const o=window.orcamentos.find(x=>x.id===id);if(!o)return;
