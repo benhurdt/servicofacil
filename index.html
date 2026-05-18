@@ -1627,33 +1627,115 @@ function excluirOrcUnico(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)
 
 let orcItensEdicao=[];
 function ativarEdicaoOrc(id){
-  const o=window.orcamentos.find(x=>x.id===id);if(!o)return;if(o.status==='convertido'){toast('Já convertido — não é possível editar.');return;}
+  const o=window.orcamentos.find(x=>x.id===id);if(!o)return;
+  if(o.status==='convertido'){toast('Já convertido — não é possível editar.');return;}
+  const isSimples=o.tipo==='simples'||o.itens.some(i=>i.isServico);
   orcItensEdicao=JSON.parse(JSON.stringify(o.itens||[]));
-  const itensHtmlEd=()=>{if(!orcItensEdicao.length)return'<div style="font-size:12px;color:var(--text3);padding:6px 0">Nenhum item.</div>';return orcItensEdicao.map((it,i)=>`<div class="orc-item-row"><input type="text" id="oed-desc-${i}" value="${it.desc||''}" placeholder="Descrição" onchange="orcItensEdicao[${i}].desc=this.value;atualizarTotalOrcEd()"><input type="number" id="oed-qtd-${i}" value="${it.qtd||''}" placeholder="Qtd" min="0" step="any" onchange="orcItensEdicao[${i}].qtd=this.value;atualizarTotalOrcEd()"><input type="number" id="oed-val-${i}" value="${it.valor||''}" placeholder="0,00" min="0" step="any" onchange="orcItensEdicao[${i}].valor=this.value;atualizarTotalOrcEd()"><button class="btn-rem" onclick="remItemOrcEd(${i},'${id}')">×</button></div>`).join('');};
-  document.getElementById('modal-content').innerHTML=`<span class="modal-handle"></span><div class="modal-hdr"><div><div class="modal-id">${o.id}</div><div class="modal-cliente">✏ Editando orçamento</div></div><button class="close-btn" onclick="fecharModal()">×</button></div>
+
+  // ── Seção de itens conforme tipo ──
+  const cabDetalhado=`<div style="display:grid;grid-template-columns:1fr 72px 90px 36px;gap:6px;margin-bottom:4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace"><span>Descrição</span><span>Qtd</span><span>R$ Unit.</span><span></span></div>`;
+  const cabSimples=`<div style="display:grid;grid-template-columns:1fr 100px 36px;gap:6px;margin-bottom:4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace"><span>Descrição do serviço</span><span>Valor (R$)</span><span></span></div>`;
+
+  const itensHtmlEd=()=>{
+    if(!orcItensEdicao.length)return'<div style="font-size:12px;color:var(--text3);padding:6px 0">Nenhum item.</div>';
+    if(isSimples){
+      return orcItensEdicao.map((it,i)=>`<div style="display:grid;grid-template-columns:1fr 100px 36px;gap:6px;margin-bottom:6px;align-items:start">
+        <textarea id="oed-desc-${i}" rows="2" style="font-size:13px;padding:8px 9px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);resize:vertical;min-height:60px;width:100%" onchange="orcItensEdicao[${i}].desc=this.value">${it.desc||''}</textarea>
+        <input type="number" id="oed-val-${i}" value="${it.valor||''}" placeholder="0,00" min="0" step="0.01" style="font-size:13px;padding:8px 9px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:44px;width:100%" onchange="orcItensEdicao[${i}].valor=this.value;atualizarTotalOrcEd()">
+        <button class="btn-rem" onclick="remItemOrcEd(${i},'${id}')">×</button>
+      </div>`).join('');
+    }
+    return orcItensEdicao.map((it,i)=>`<div class="orc-item-row">
+      <input type="text" id="oed-desc-${i}" value="${it.desc||''}" placeholder="Descrição" onchange="orcItensEdicao[${i}].desc=this.value;atualizarTotalOrcEd()">
+      <input type="number" id="oed-qtd-${i}" value="${it.qtd||''}" placeholder="Qtd" min="0" step="any" onchange="orcItensEdicao[${i}].qtd=this.value;atualizarTotalOrcEd()">
+      <input type="number" id="oed-val-${i}" value="${it.valor||''}" placeholder="0,00" min="0" step="any" onchange="orcItensEdicao[${i}].valor=this.value;atualizarTotalOrcEd()">
+      <button class="btn-rem" onclick="remItemOrcEd(${i},'${id}')">×</button>
+    </div>`).join('');
+  };
+
+  // ── Campos de totais conforme tipo ──
+  const totaisHtml=isSimples?`
+    <div style="padding:12px;background:var(--surface2);border-radius:var(--r);margin-top:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+        <div class="edit-field"><label>Projeto externo (R$) — opcional</label><input type="number" id="oed-projeto" value="${o.projeto||''}" placeholder="0,00" min="0" step="0.01" oninput="atualizarTotalOrcEd()"></div>
+        <div class="edit-field"><label>Mão de obra (R$) — opcional</label><input type="number" id="oed-mdo" value="${o.maoDeObra||''}" placeholder="0,00" min="0" step="0.01" oninput="atualizarTotalOrcEd()"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px dashed var(--border)">
+        <span style="font-size:13px;color:var(--text2)">Total</span>
+        <span style="font-size:18px;font-weight:600;color:var(--blue);font-family:'IBM Plex Mono',monospace" id="oed-total">${fmtM(totalOrc(o))}</span>
+      </div>
+    </div>`:`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+      <div class="edit-field"><label>Custo projeto (R$)</label><input type="number" id="oed-projeto" value="${o.projeto||''}" placeholder="0,00" min="0" step="0.01" oninput="atualizarTotalOrcEd()"></div>
+      <div class="edit-field"><label>Descrição do projeto</label><input type="text" id="oed-projeto-desc" value="${o.projetoDesc||''}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
+      <div class="edit-field"><label>Mão de obra</label><input type="number" id="oed-mdo" value="${o.maoDeObra||''}" placeholder="0,00" min="0" step="0.01" oninput="atualizarTotalOrcEd()"></div>
+      <div class="edit-field"><label>Total</label><div style="font-size:18px;font-weight:600;padding:10px 0;color:var(--blue);font-family:'IBM Plex Mono',monospace" id="oed-total">${fmtM(totalOrc(o))}</div></div>
+    </div>`;
+
+  document.getElementById('modal-content').innerHTML=`<span class="modal-handle"></span>
+    <div class="modal-hdr"><div><div class="modal-id">${o.id} — ✏ Editando ${isSimples?'(Simplificado)':'(Detalhado)'}</div><div class="modal-cliente">${o.cliente}</div></div><button class="close-btn" onclick="fecharModal()">×</button></div>
     <div class="edit-field"><label>Cliente *</label><input type="text" id="oed-cliente" value="${o.cliente}"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="edit-field"><label>WhatsApp</label><input type="tel" id="oed-tel" value="${o.tel||''}"></div><div class="edit-field"><label>Responsável</label><input type="text" id="oed-tec" value="${o.tec||''}"></div></div>
     <div class="edit-field"><label>Descrição *</label><textarea id="oed-desc">${o.desc}</textarea></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="edit-field"><label>Emissão</label><input type="date" id="oed-emissao" value="${o.emissao||''}"></div><div class="edit-field"><label>Validade</label><input type="date" id="oed-validade" value="${o.validade||''}"></div></div>
     <div class="edit-field"><label>Prazo (dias)</label><input type="number" id="oed-entrega" value="${o.entrega||''}" placeholder="Ex: 15" min="1" step="1" style="max-width:120px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div class="edit-field"><label>Custo projeto (R$)</label><input type="number" id="oed-projeto" value="${o.projeto||''}" placeholder="0,00" min="0" step="0.01" oninput="atualizarTotalOrcEd()"></div><div class="edit-field"><label>Descrição do projeto</label><input type="text" id="oed-projeto-desc" value="${o.projetoDesc||''}"></div></div>
-    <div class="form-divider">Itens</div>
-    <div style="display:grid;grid-template-columns:1fr 72px 90px 36px;gap:6px;margin-bottom:4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace"><span>Descrição</span><span>Qtd</span><span>R$ Unit.</span><span></span></div>
+    <div class="form-divider">${isSimples?'Serviços':'Itens'}</div>
+    ${isSimples?cabSimples:cabDetalhado}
     <div id="oed-itens-list">${itensHtmlEd()}</div>
-    <button class="btn-add-mat" onclick="addItemOrcEd('${id}')">+ Adicionar item</button>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px"><div class="edit-field"><label>Mão de obra</label><input type="number" id="oed-mdo" value="${o.maoDeObra||''}" placeholder="0,00" min="0" step="0.01" oninput="atualizarTotalOrcEd()"></div><div class="edit-field"><label>Total</label><div style="font-size:18px;font-weight:600;padding:10px 0;color:var(--blue);font-family:'IBM Plex Mono',monospace" id="oed-total">${fmtM(totalOrc(o))}</div></div></div>
-    <div class="edit-field"><label>Observações</label><textarea id="oed-obs">${o.obs||''}</textarea></div>
+    <button class="btn-add-mat" onclick="addItemOrcEd('${id}')">+ Adicionar ${isSimples?'serviço':'item'}</button>
+    ${totaisHtml}
+    <div class="edit-field" style="margin-top:10px"><label>Observações</label><textarea id="oed-obs">${o.obs||''}</textarea></div>
     <div style="display:flex;gap:8px;margin-top:1rem"><button class="btn-save-edit" onclick="salvarEdicaoOrc('${id}')">💾 Salvar</button><button class="btn-cancel-edit" onclick="abrirModalOrc('${id}')">Cancelar</button></div>`;
-  document.getElementById('modal-overlay').classList.add('open');atualizarTotalOrcEd();
+  document.getElementById('modal-overlay').classList.add('open');
+  atualizarTotalOrcEd();
 }
-function atualizarTotalOrcEd(){const it=orcItensEdicao.reduce((a,i)=>a+parseFloat(i.qtd||0)*parseFloat(i.valor||0),0);const mdo=parseFloat(document.getElementById('oed-mdo')?.value||0);const proj=parseFloat(document.getElementById('oed-projeto')?.value||0);const el=document.getElementById('oed-total');if(el)el.textContent=fmtM(it+mdo+proj);}
-function addItemOrcEd(id){orcItensEdicao.push({desc:'',qtd:'1',valor:''});ativarEdicaoOrc(id);}
+
+function atualizarTotalOrcEd(){
+  const o=window.orcamentos.find(x=>x.id===document.querySelector('.modal-id')?.textContent?.split('—')[0]?.trim());
+  const isSimples=orcItensEdicao.some(i=>i.isServico)||(o&&o.tipo==='simples');
+  const tItens=orcItensEdicao.reduce((a,i)=>isSimples?a+parseFloat(i.valor||0):a+parseFloat(i.qtd||0)*parseFloat(i.valor||0),0);
+  const mdo=parseFloat(document.getElementById('oed-mdo')?.value||0);
+  const proj=parseFloat(document.getElementById('oed-projeto')?.value||0);
+  const el=document.getElementById('oed-total');
+  if(el)el.textContent=fmtM(tItens+(mdo>0?mdo:0)+(proj>0?proj:0));
+}
+
+function addItemOrcEd(id){
+  const o=window.orcamentos.find(x=>x.id===id);
+  const isSimples=o&&(o.tipo==='simples'||o.itens.some(i=>i.isServico));
+  orcItensEdicao.push(isSimples?{desc:'',valor:'',isServico:true}:{desc:'',qtd:'1',valor:''});
+  ativarEdicaoOrc(id);
+}
 function remItemOrcEd(i,id){orcItensEdicao.splice(i,1);ativarEdicaoOrc(id);}
+
 function salvarEdicaoOrc(id){
   const o=window.orcamentos.find(x=>x.id===id);if(!o)return;
-  const cliente=document.getElementById('oed-cliente')?.value.trim();const desc=document.getElementById('oed-desc')?.value.trim();if(!cliente||!desc){toast('Preencha cliente e descrição.');return;}
-  orcItensEdicao.forEach((it,i)=>{const d=document.getElementById('oed-desc-'+i);const q=document.getElementById('oed-qtd-'+i);const v=document.getElementById('oed-val-'+i);if(d)it.desc=d.value.trim();if(q)it.qtd=q.value;if(v)it.valor=v.value;});
-  o.cliente=cliente;o.tel=(document.getElementById('oed-tel')?.value||'').replace(/\D/g,'');o.tec=document.getElementById('oed-tec')?.value.trim()||'—';o.desc=desc;o.emissao=document.getElementById('oed-emissao')?.value||'';o.validade=document.getElementById('oed-validade')?.value||'';o.entrega=document.getElementById('oed-entrega')?.value||'';o.itens=orcItensEdicao.filter(it=>it.desc.trim());o.maoDeObra=parseFloat(document.getElementById('oed-mdo')?.value)||0;o.projeto=parseFloat(document.getElementById('oed-projeto')?.value)||0;o.projetoDesc=document.getElementById('oed-projeto-desc')?.value.trim()||'';o.obs=document.getElementById('oed-obs')?.value.trim()||'';
+  const cliente=document.getElementById('oed-cliente')?.value.trim();
+  const desc=document.getElementById('oed-desc')?.value.trim();
+  if(!cliente||!desc){toast('Preencha cliente e descrição.');return;}
+  const isSimples=o.tipo==='simples'||orcItensEdicao.some(i=>i.isServico);
+  // Captura valores dos campos editados
+  orcItensEdicao.forEach((it,i)=>{
+    const d=document.getElementById('oed-desc-'+i);
+    const v=document.getElementById('oed-val-'+i);
+    if(d)it.desc=d.value.trim();
+    if(v)it.valor=v.value;
+    if(!isSimples){const q=document.getElementById('oed-qtd-'+i);if(q)it.qtd=q.value;}
+  });
+  o.cliente=cliente;
+  o.tel=(document.getElementById('oed-tel')?.value||'').replace(/\D/g,'');
+  o.tec=document.getElementById('oed-tec')?.value.trim()||'—';
+  o.desc=desc;
+  o.emissao=document.getElementById('oed-emissao')?.value||'';
+  o.validade=document.getElementById('oed-validade')?.value||'';
+  o.entrega=document.getElementById('oed-entrega')?.value||'';
+  o.itens=orcItensEdicao.filter(it=>it.desc.trim());
+  o.maoDeObra=parseFloat(document.getElementById('oed-mdo')?.value)||0;
+  o.projeto=parseFloat(document.getElementById('oed-projeto')?.value)||0;
+  o.projetoDesc=document.getElementById('oed-projeto-desc')?.value?.trim()||'';
+  o.obs=document.getElementById('oed-obs')?.value.trim()||'';
   salvarOrcamentos();renderAllOrc();fecharModal();abrirModalOrc(id);toast('Orçamento atualizado!');
 }
 function popularMesesOrc(){const sel=document.getElementById('orc-mes-sel');if(!sel)return;const meses=[...new Set(window.orcamentos.flatMap(o=>[getMesAno(o.emissao),getMesAno(o.validade)].filter(Boolean)))].sort().reverse();const atual=sel.value;sel.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}"${m===atual?' selected':''}>${labelMes(m)}</option>`).join('');}
