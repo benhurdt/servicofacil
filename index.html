@@ -1146,7 +1146,9 @@ function gerarRecibo(id){
   ${(()=>{
     const mats=(o.materiais||[]).filter(m=>!m.isProjeto);
     if(!mats.length)return '';
-    const isSimples=mats.some(m=>m.isServico);
+    // Detecta simplificado: pela flag isServico nos materiais OU pelo orçamento de origem
+    const orcOrigem=o.orcamentoOrigemId?window.orcamentos.find(x=>x.id===o.orcamentoOrigemId):null;
+    const isSimples=mats.some(m=>m.isServico)||(orcOrigem&&(orcOrigem.tipo==='simples'||orcOrigem.itens.some(i=>i.isServico)));
     const tMat=mats.reduce((a,m)=>a+parseFloat(m.qtd||0)*parseFloat(m.valor||0),0);
     if(isSimples){
       // Layout simplificado: só Descrição e Valor
@@ -1548,7 +1550,7 @@ function salvarOrc(){
   let itens=[];let maoDeObra=0;let projeto=0;let projetoDesc='';
   if(tipo==='simples'){
     servicosSimplesForm.forEach((s,i)=>{const d=document.getElementById('ss-desc-'+i);const v=document.getElementById('ss-val-'+i);if(d)s.desc=d.value.trim();if(v)s.valor=v.value;});
-    itens=servicosSimplesForm.filter(s=>s.desc.trim()).map(s=>({desc:s.desc,qtd:'1',valor:s.valor,isServico:true}));
+    itens=servicosSimplesForm.filter(s=>s.desc.trim()).map(s=>({desc:s.desc,qtd:'1',valor:String(s.valor||0),isServico:true}));
     maoDeObra=parseFloat(document.getElementById('of-mdo-simples')?.value)||0;
     projeto=parseFloat(document.getElementById('of-proj-simples')?.value)||0;
     projetoDesc=projeto>0?'Projeto externo':'';
@@ -1625,7 +1627,11 @@ function gerarPDFOrcamento(id){
         </tr>`).join('')}
       </table>`;
     }
-    return `<table><tr><th>Descrição</th><th>Qtd</th><th>R$ Unit.</th><th>Total</th></tr>${o.itens.map(i=>`<tr><td>${i.desc}</td><td>${i.qtd}</td><td>R$ ${Number(i.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td>R$ ${(parseFloat(i.qtd||0)*parseFloat(i.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}</table>`;
+    const subTotal=o.itens.reduce((a,i)=>a+parseFloat(i.qtd||0)*parseFloat(i.valor||0),0);
+    return `<table><tr><th>Descrição</th><th>Qtd</th><th>R$ Unit.</th><th>Total</th></tr>
+      ${o.itens.map(i=>`<tr><td>${i.desc}</td><td>${i.qtd}</td><td>R$ ${Number(i.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td>R$ ${(parseFloat(i.qtd||0)*parseFloat(i.valor||0)).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`).join('')}
+      <tr style="background:#f5f4f0"><td colspan="3" style="font-weight:700;padding:7px 8px;border-top:2px solid #1a1917">Subtotal materiais</td><td style="font-weight:700;padding:7px 8px;border-top:2px solid #1a1917">R$ ${subTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>
+    </table>`;
   })()}
   ${o.projeto>0?`<div class="projeto-box"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#92400e;margin-bottom:4px">Custo de projeto externo</div><div style="font-size:14px;font-weight:600;color:#92400e">${o.projetoDesc||'Projeto contratado'}: R$ ${Number(o.projeto).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div style="font-size:12px;color:#92400e;margin-top:4px">Este custo está incluído no total do orçamento.</div></div>`:''}
   <div class="grid">
@@ -1778,7 +1784,7 @@ function addItemOrcEd(id){
   const o=window.orcamentos.find(x=>x.id===id);
   const isSimples=o&&(o.tipo==='simples'||orcItensEdicao.some(i=>i.isServico));
   capturarItensEdicao(isSimples);
-  orcItensEdicao.push(isSimples?{desc:'',valor:'',isServico:true}:{desc:'',qtd:'1',valor:''});
+  orcItensEdicao.push(isSimples?{desc:'',qtd:'1',valor:'',isServico:true}:{desc:'',qtd:'1',valor:''});
   renderItensEdicaoNoLugar(id,isSimples);
 }
 function remItemOrcEd(i,id){
