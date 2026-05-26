@@ -857,21 +857,32 @@ function salvarAgendamento(){
   const cliente = document.getElementById('ag-cliente').value.trim();
   const tel = document.getElementById('ag-tel').value.trim();
   const data = document.getElementById('ag-data').value;
-  const hora = document.getElementById('ag-hora').value;
-  const prof = document.getElementById('ag-prof').value;
+  const horaRaw = document.getElementById('ag-hora').value;
+  const profSelect = document.getElementById('ag-prof').value;
   const servico = document.getElementById('ag-servico').value;
   const obs = document.getElementById('ag-obs').value.trim();
 
-  if(!cliente||!data||!hora||!prof||!servico){
-    toast('Preencha os campos obrigatórios'); return;
+  if(!cliente||!data||!horaRaw||!servico){
+    toast('Preencha cliente, data, horário e serviço'); return;
   }
+
+  // horaRaw pode ser "09:00" ou "09:00|Ana" dependendo de como foi selecionado
+  let hora, prof;
+  if(horaRaw.includes('|')){
+    [hora, prof] = horaRaw.split('|');
+  } else {
+    hora = horaRaw;
+    prof = profSelect;
+  }
+  if(!prof){ toast('Selecione a profissional'); return; }
+
   const novo = { id:uid(), cliente, tel, data, hora, servico, profissional:prof, status:'confirmado', origem:'manual', obs };
   agendamentos.push(novo);
   salvar(KEY_AG, agendamentos);
   adicionarNotif('agenda','Agendamento manual: '+cliente, servico+' em '+fmtData(data)+' às '+hora+' com '+prof);
   renderAgenda();
+  atualizarHorarios();
   toast('Agendamento registrado!');
-  // Limpa form
   ['ag-cliente','ag-tel','ag-obs'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ag-hora').value='';
   document.getElementById('ag-prof').value='';
@@ -1056,30 +1067,71 @@ function gerarHistoricoDemo(cliente){
 
 // ── SELECTS ───────────────────────────────────────────────
 function atualizarSelects(){
+  // Atualiza selects de profissional
   ['ag-prof','bl-prof'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel) return;
+    const valorAtual = sel.value;
     sel.innerHTML='<option value="">Selecione...</option>'+
       profissionais.map(p=>`<option value="${p.nome}">${p.nome}</option>`).join('');
+    // Mantém seleção anterior se ainda válida
+    if(valorAtual) sel.value=valorAtual;
   });
+  atualizarHorarios();
+}
 
+function atualizarHorarios(){
   const slotSel = document.getElementById('ag-hora');
-  if(slotSel){
-    const data = document.getElementById('ag-data').value;
-    const prof = document.getElementById('ag-prof').value;
+  if(!slotSel) return;
+  const data = document.getElementById('ag-data').value;
+  const prof = document.getElementById('ag-prof').value;
+  if(!data){ slotSel.innerHTML='<option value="">Selecione a data primeiro</option>'; return; }
+
+  let slots = [];
+  if(prof){
+    // Profissional selecionada — mostra só os slots dela
     const p = profissionais.find(x=>x.nome===prof);
-    if(p && data){
-      const slots = gerarSlots(p.inicio, p.fim, p.intervalo);
-      const ags = agendamentos.filter(a=>a.data===data&&a.profissional===prof&&a.status!=='cancelado');
-      const livres = slots.filter(s=>!ags.some(a=>a.hora===s));
-      slotSel.innerHTML='<option value="">Selecione...</option>'+livres.map(s=>`<option value="${s}">${s}</option>`).join('');
+    if(p){
+      const todosSlotsP = gerarSlots(p.inicio, p.fim, p.intervalo);
+      const agsP = agendamentos.filter(a=>a.data===data&&a.profissional===prof&&a.status!=='cancelado');
+      const bloqP = bloqueios.filter(b=>b.data===data&&b.profissional===prof);
+      slots = todosSlotsP
+        .filter(s=>!agsP.some(a=>a.hora===s))
+        .filter(s=>!bloqP.some(b=>s>=b.ini&&s<b.fim))
+        .map(s=>({hora:s, label:s+' — '+prof}));
     }
+  } else {
+    // Sem profissional — agrega todos os slots livres de todas as profissionais
+    const horasVistas = new Set();
+    profissionais.forEach(p=>{
+      const todosSlotsP = gerarSlots(p.inicio, p.fim, p.intervalo);
+      const agsP = agendamentos.filter(a=>a.data===data&&a.profissional===p.nome&&a.status!=='cancelado');
+      const bloqP = bloqueios.filter(b=>b.data===data&&b.profissional===p.nome);
+      todosSlotsP
+        .filter(s=>!agsP.some(a=>a.hora===s))
+        .filter(s=>!bloqP.some(b=>s>=b.ini&&s<b.fim))
+        .forEach(s=>{
+          const key = s+'|'+p.nome;
+          if(!horasVistas.has(key)){
+            horasVistas.add(key);
+            slots.push({hora:s, label:s+' — '+p.nome});
+          }
+        });
+    });
+    slots.sort((a,b)=>a.hora.localeCompare(b.hora));
+  }
+
+  if(!slots.length){
+    slotSel.innerHTML='<option value="">Nenhum horário disponível</option>';
+  } else {
+    slotSel.innerHTML='<option value="">Selecione o horário...</option>'+
+      slots.map(s=>`<option value="${s.hora}|${s.label.split('— ')[1]||''}">${s.label}</option>`).join('');
   }
 }
 
 // Atualiza horários quando muda data ou profissional no form
-document.getElementById('ag-data').addEventListener('change', atualizarSelects);
-document.getElementById('ag-prof').addEventListener('change', atualizarSelects);
+document.getElementById('ag-data').addEventListener('change', atualizarHorarios);
+document.getElementById('ag-prof').addEventListener('change', atualizarHorarios);
 
 // ── RENDERIZA HISTÓRICO (tab) ─────────────────────────────
 function renderHistorico(){
