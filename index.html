@@ -457,6 +457,18 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
 .orc-item-row input{font-size:13px;padding:8px 9px;border:1.5px solid var(--border);border-radius:var(--r);background:var(--bg);color:var(--text);min-height:40px;width:100%}
 .orc-item-row input:focus{border-color:var(--text);background:var(--surface);outline:none}
 .orc-alerta-venc{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--rlg);padding:.75rem 1rem;font-size:13px;color:var(--amber);margin-bottom:.5rem}
+.orc-followup-banner{background:var(--blue-bg,#eff6ff);border:1px solid var(--blue-bd,#93c5fd);border-radius:var(--rlg);padding:.85rem 1rem;margin-bottom:.75rem;grid-column:1/-1}
+.orc-followup-banner .fu-titulo{font-size:13px;font-weight:700;color:var(--blue,#1e40af);margin-bottom:.5rem}
+.orc-followup-item{display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:13px}
+.orc-followup-item:last-child{border-bottom:none}
+.orc-followup-item .fu-info{flex:1;min-width:0}
+.orc-followup-item .fu-cliente{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.orc-followup-item .fu-meta{font-size:11px;color:var(--text3)}
+.orc-followup-item .fu-btns{display:flex;gap:.4rem;flex-shrink:0}
+.btn-fu{padding:5px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;transition:opacity .15s}
+.btn-fu-wpp{background:var(--wpp,#25d366);color:#fff}
+.btn-fu-wpp2{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd)}
+.btn-fu-ign{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
 .orc-modal-section{background:var(--surface2);border-radius:var(--rlg);padding:1rem;margin-top:1rem}
 .orc-modal-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:.6rem;font-family:'IBM Plex Mono',monospace}
 .btn-converter{font-size:14px;font-weight:500;padding:11px 18px;border-radius:var(--r);border:none;background:var(--green);color:#fff;cursor:pointer;width:100%;min-height:44px;transition:opacity .15s}
@@ -554,7 +566,7 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
 <div class="hdr">
   <div class="logo">Serviço<span>Fácil</span></div>
   <div class="hdr-right">
-    <span class="hdr-version">v32.0</span>
+    <span class="hdr-version">v33.0</span>
     <button class="emp-btn" id="emp-btn" onclick="setPage('config')">Configurar empresa</button>
   </div>
 </div>
@@ -760,6 +772,7 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
   <!-- PAGE ORÇAMENTOS -->
   <div class="page" id="page-orcamentos">
     <div class="metrics" id="orc-metrics"></div>
+    <div id="orc-followup-area"></div>
     <div class="sel-bar" id="orc-sel-bar">
       <div class="sel-info" id="orc-sel-info">0 selecionados</div>
       <div class="sel-actions">
@@ -1222,7 +1235,7 @@ function renderMetrics(){
   const hoje=new Date();hoje.setHours(0,0,0,0);
   const atrasadas=window.ordens.filter(isAtrasada);
   const alertaHTML=atrasadas.length>0
-    ?`<div style="grid-column:1/-1;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--rlg);padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer" onclick="setFiltro('andamento')" title="Ver OS em andamento">
+    ?`<div style="grid-column:1/-1;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--rlg);padding:.75rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer" onclick="setFiltro('atrasadas')" title="Ver OS com prazo vencido">
         <div style="font-size:13px;color:var(--amber);font-weight:500"><i class="ti ti-clock-exclamation" style="font-size:15px"></i> ${atrasadas.length} OS com prazo vencido</div>
         <div style="font-size:12px;color:var(--amber);white-space:nowrap">Ver →</div>
       </div>`:'';
@@ -1236,10 +1249,10 @@ function renderMetrics(){
 
 // ── FILTROS E LISTA OS ───────────────────────────────────
 let filtro='todas',modoSel=false,selecionadas=new Set(),materiaisTemp=[];
-let msgTemplate='Olá, {cliente}!\n\nAqui é *{empresa}*.\n\nO serviço *{servico}* ({os}) foi concluído!\n\nValor: *{valor}*\n\nObrigado pela confiança!';
+let msgTemplate='Olá, {cliente}!\n\nAqui é *{empresa}*.\n\nO serviço *{servico}* ({os}) foi concluído!\n\nObrigado pela confiança!';
 
 function renderFilters(){
-  const opts=[{k:'todas',l:'Todas'},{k:'aberta',l:'Abertas'},{k:'andamento',l:'Em andamento'},{k:'concluida',l:'Concluídas'},{k:'cancelada',l:'Canceladas'}];
+  const opts=[{k:'todas',l:'Todas'},{k:'aberta',l:'Abertas'},{k:'andamento',l:'Em andamento'},{k:'concluida',l:'Concluídas'},{k:'cancelada',l:'Canceladas'},{k:'atrasadas',l:'⚠️ Atrasadas'}];
   document.getElementById('filters').innerHTML=opts.map(o=>`<button class="filter-btn${filtro===o.k?' active':''}" onclick="setFiltro('${o.k}')">${o.l}</button>`).join('');
 }
 function setFiltro(f){filtro=f;paginaOS=1;renderFilters();renderLista();}
@@ -1249,7 +1262,10 @@ const OS_POR_PAG=30;
 
 function renderLista(){
   const termo=(document.getElementById('busca-os')?.value||'').toLowerCase().trim();
-  let lista=filtro==='todas'?window.ordens:window.ordens.filter(o=>o.status===filtro);
+  let lista;
+  if(filtro==='todas') lista=window.ordens;
+  else if(filtro==='atrasadas') lista=window.ordens.filter(isAtrasada);
+  else lista=window.ordens.filter(o=>o.status===filtro);
   if(termo){
     lista=lista.filter(o=>
       o.cliente.toLowerCase().includes(termo)||
@@ -1291,14 +1307,14 @@ function toggleSelMode(){
   modoSel=!modoSel;selecionadas.clear();
   document.getElementById('sel-bar').classList.toggle('show',modoSel);
   document.getElementById('sel-hint').style.display=modoSel?'block':'none';
-  document.getElementById('btn-sel-mode').textContent=modoSel?'<i class="ti ti-x" aria-hidden="true"></i>Cancelar seleção':'<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';
+  document.getElementById('btn-sel-mode').innerHTML=modoSel?'<i class="ti ti-x" aria-hidden="true"></i>Cancelar seleção':'<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';
   renderLista();
 }
 function cancelarSelecao(){
   modoSel=false;selecionadas.clear();
   document.getElementById('sel-bar').classList.remove('show');
   document.getElementById('sel-hint').style.display='none';
-  document.getElementById('btn-sel-mode').textContent='<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';
+  document.getElementById('btn-sel-mode').innerHTML='<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';
   renderLista();
 }
 function cardClick(id){
@@ -1748,7 +1764,7 @@ function gerarRecibo(id){
     <div><div class="ass-line">Cliente — ${o.cliente}</div></div>
   </div>
   <div class="footer">${(o.fotos&&o.fotos.length)?`<div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#666;margin-bottom:10px;font-family:monospace">Fotos do serviço</div><div style="display:flex;gap:10px;flex-wrap:wrap">${(o.fotos||[]).map((f,i)=>`<img src="${f}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #eee">`).join('')}</div></div>`:''}
-  <div class="footer">ServiçoFácil v32 · Documento gerado em ${new Date().toLocaleString('pt-BR')}</div>
+  <div class="footer">ServiçoFácil v33 · Documento gerado em ${new Date().toLocaleString('pt-BR')}</div>
   <div style="margin-top:20px;display:flex;gap:10px">
     <button onclick="window.print()" style="padding:10px 20px;background:#1a1917;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px"><i class="ti ti-printer" aria-hidden="true"></i>Imprimir / Salvar PDF</button>
     ${o.tel?(()=>{const wppMsg=encodeURIComponent('Olá, '+o.cliente+'!\n\nSegue o recibo do serviço *'+o.id+'*.');return `<a href="https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${wppMsg}" target="_blank" rel="noopener" style="padding:10px 20px;background:#25D366;color:#fff;border-radius:8px;cursor:pointer;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px">📱 Enviar pelo WhatsApp</a>`;})():''}
@@ -2090,8 +2106,8 @@ function renderOrcLista(){
   if(!lista.length){el.innerHTML=`<div class="empty">${termo?'Nenhum orçamento encontrado para "'+termo+'"':'Nenhum orçamento.'}</div>`;return;}
   el.innerHTML=lista.map(o=>{const sel=orcSelecionados.has(o.id);const tot=totalOrc(o);const dias=diasParaVencer(o.validade);const vencido=o.status==='enviado'&&dias!==null&&dias<0;return`<div class="orc-card${vencido?' vencido':''}${o.status==='aprovado'?' aprovado':''}${sel?' selecionado':''}" onclick="orcCardClick('${o.id}')"><div class="os-card-top"><div class="os-card-left"><div class="os-num">${o.id}</div><div class="os-cliente">${o.cliente}</div><div class="os-desc">${o.desc}</div><div class="os-meta">${o.tec||''}${o.emissao?' · '+fmt(o.emissao):''}${o.validade?' · até '+fmt(o.validade):''}${vencido?' <span style="color:var(--red);font-weight:600">VENCIDO</span>':''}</div></div><div class="os-card-right">${orcModoSel?`<div class="checkbox-os${sel?' checked':''}"></div>`:`${badgeOrc(o)}<div class="os-valor">${fmtM(tot)}</div>`}</div></div></div>`;}).join('');
 }
-function toggleSelModeOrc(){orcModoSel=!orcModoSel;orcSelecionados.clear();document.getElementById('orc-sel-bar').classList.toggle('show',orcModoSel);document.getElementById('orc-sel-hint').style.display=orcModoSel?'block':'none';document.getElementById('btn-orc-sel').textContent=orcModoSel?'<i class="ti ti-x" aria-hidden="true"></i>Cancelar seleção':'<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';renderOrcLista();}
-function cancelarSelecaoOrc(){orcModoSel=false;orcSelecionados.clear();document.getElementById('orc-sel-bar').classList.remove('show');document.getElementById('orc-sel-hint').style.display='none';document.getElementById('btn-orc-sel').textContent='<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';renderOrcLista();}
+function toggleSelModeOrc(){orcModoSel=!orcModoSel;orcSelecionados.clear();document.getElementById('orc-sel-bar').classList.toggle('show',orcModoSel);document.getElementById('orc-sel-hint').style.display=orcModoSel?'block':'none';document.getElementById('btn-orc-sel').innerHTML=orcModoSel?'<i class="ti ti-x" aria-hidden="true"></i>Cancelar seleção':'<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';renderOrcLista();}
+function cancelarSelecaoOrc(){orcModoSel=false;orcSelecionados.clear();document.getElementById('orc-sel-bar').classList.remove('show');document.getElementById('orc-sel-hint').style.display='none';document.getElementById('btn-orc-sel').innerHTML='<i class="ti ti-checkbox" aria-hidden="true"></i>Selecionar para excluir';renderOrcLista();}
 function orcCardClick(id){if(orcModoSel){if(orcSelecionados.has(id))orcSelecionados.delete(id);else orcSelecionados.add(id);document.getElementById('orc-sel-info').textContent=`${orcSelecionados.size} selecionado${orcSelecionados.size!==1?'s':''}`;renderOrcLista();}else abrirModalOrc(id);}
 function confirmarDeleteOrc(){if(!orcSelecionados.size){toast('Selecione ao menos um.');return;}const qtd=orcSelecionados.size;document.getElementById('confirm-title').textContent=`Excluir ${qtd}`;document.getElementById('confirm-msg').textContent=`Excluir ${qtd} orçamento${qtd!==1?'s':''}? Irreversível.`;document.getElementById('confirm-ok').onclick=()=>{window.orcamentos=window.orcamentos.filter(o=>!orcSelecionados.has(o.id));salvarOrcamentos();cancelarSelecaoOrc();renderAllOrc();fecharConfirm();toast('Excluído.');};document.getElementById('confirm-overlay').classList.add('open');}
 
@@ -2273,7 +2289,75 @@ function converterOrcEmOS(id){
   const novaOS={id:proximoId(),cliente:o.cliente,tel:o.tel,desc:o.desc,tec:o.tec,data:(()=>{if(o.entrega&&Number(o.entrega)>0){const d=new Date();d.setDate(d.getDate()+Number(o.entrega));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}return o.validade||'';})(),valor:totalOrc(o),status:'aberta',dataConclusao:'',servicosExecutados:'',maoDeObra:o.maoDeObra,materiais,pagamento:null,criadoEm:new Date().toISOString(),orcamentoOrigemId:o.id};
   window.ordens.unshift(novaOS);lsSet(OS_KEY,JSON.stringify(window.ordens));invalidarCache();o.status='convertido';o.osGeradaId=novaOS.id;salvarOrcamentos();renderAll();renderAllOrc();fecharModal();toast('✅ OS '+novaOS.id+' criada! Valor: '+fmtM(novaOS.valor));setTimeout(()=>abrirModalOrc(id),300);
 }
-function enviarOrcWpp(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)return;const tot=totalOrc(o);const msg=`Olá, ${o.cliente}!\n\nAqui é *${config.razao||empresa||'nossa empresa'}*.\n\nOrçamento *${o.id}* para:\n\n*${o.desc}*\n\nTotal: *R$ ${tot.toLocaleString('pt-BR',{minimumFractionDigits:2})}*\n${o.entrega?'Prazo: *'+o.entrega+' dias após aprovação*\n':''}Válido até: *${fmt(o.validade)}*\n\n${o.obs?o.obs+'\n\n':''}Aguardamos sua confirmação!`;window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');if(o.status==='rascunho'){o.status='enviado';salvarOrcamentos();renderAllOrc();}toast('WhatsApp aberto!');}
+function enviarOrcWpp(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)return;const tot=totalOrc(o);const msg=`Olá, ${o.cliente}!\n\nAqui é *${config.razao||empresa||'nossa empresa'}*.\n\nOrçamento *${o.id}* para:\n\n*${o.desc}*\n\nTotal: *R$ ${tot.toLocaleString('pt-BR',{minimumFractionDigits:2})}*\n${o.entrega?'Prazo: *'+o.entrega+' dias após aprovação*\n':''}Válido até: *${fmt(o.validade)}*\n\n${o.obs?o.obs+'\n\n':''}Aguardamos sua confirmação!`;window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');if(o.status==='rascunho'||o.status==='enviado'){o.status='enviado';o.enviadoEm=o.enviadoEm||new Date().toISOString();o.followupIgnorado=false;salvarOrcamentos();renderAllOrc();}toast('WhatsApp aberto!');}
+
+// ── FOLLOW-UP DE ORÇAMENTOS ──────────────────────────────────────
+function diasDesdeEnvio(iso){if(!iso)return null;return Math.floor((Date.now()-new Date(iso).getTime())/86400000);}
+function orcsPendentesFollowup(){
+  return window.orcamentos.filter(o=>{
+    if(o.status!=='enviado')return false;
+    if(o.followupIgnorado)return false;
+    // Usa enviadoEm se disponível, senão usa data de criação do orçamento
+    const ref=o.enviadoEm||o.criadoEm||null;
+    const d=diasDesdeEnvio(ref);
+    if(d===null)return false;
+    return d>=1;
+  });
+}
+function enviarFollowup1(id){
+  const o=window.orcamentos.find(x=>x.id===id);if(!o)return;
+  const empresa=config.razao||'nossa empresa';
+  const msg=`Oi, ${o.cliente}! Tudo bem?\n\nAqui é a *${empresa}*. Passando para saber se ficou alguma dúvida sobre o orçamento *${o.id}* que enviamos.\n\nQualquer ajuste é só falar — será um prazer atender! 😊`;
+  window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+  o.followupEnviadoEm=new Date().toISOString();
+  o.followupIgnorado=false;
+  salvarOrcamentos();renderOrcMetrics();
+  toast('Follow-up 1 enviado!');
+}
+function enviarFollowup2(id){
+  const o=window.orcamentos.find(x=>x.id===id);if(!o)return;
+  const empresa=config.razao||'nossa empresa';
+  const validade=o.validade?`O orçamento tem validade até *${fmt(o.validade)}*. `:'';
+  const msg=`Oi, ${o.cliente}!\n\nAqui é a *${empresa}* novamente. ${validade}Se precisar de mais prazo ou quiser conversar sobre algum ajuste, é só me chamar.\n\nAguardamos seu retorno! 🙏`;
+  window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+  o.followupEnviadoEm=new Date().toISOString();
+  o.followupIgnorado=true; // marca como resolvido após 2ª mensagem
+  salvarOrcamentos();renderOrcMetrics();
+  toast('Follow-up 2 enviado!');
+}
+function ignorarFollowup(id){
+  const o=window.orcamentos.find(x=>x.id===id);if(!o)return;
+  o.followupIgnorado=true;
+  salvarOrcamentos();renderOrcMetrics();
+  toast('Orçamento arquivado do follow-up.');
+}
+function renderFollowupBanner(){
+  const pending=orcsPendentesFollowup();
+  const el=document.getElementById('orc-followup-area');
+  if(!el)return;
+  if(!pending.length){el.innerHTML='';return;}
+  const itens=pending.map(o=>{
+    const dias=diasDesdeEnvio(o.enviadoEm);
+    const jaFez=!!o.followupEnviadoEm;
+    const temTel=o.tel&&o.tel.replace(/\D/g,'').length>=8;
+    return `<div class="orc-followup-item">
+      <div class="fu-info">
+        <div class="fu-cliente">${o.cliente} — ${o.id}</div>
+        <div class="fu-meta">${dias}d sem resposta · R$ ${fmtM(totalOrc(o)).replace('R$ ','')}</div>
+      </div>
+      <div class="fu-btns">
+        ${temTel?`<button class="btn-fu ${jaFez?'btn-fu-wpp2':'btn-fu-wpp'}" onclick="enviarFollowup${jaFez?2:1}('${o.id}')">
+          📱 ${jaFez?'2ª msg':'1ª msg'}
+        </button>`:''}
+        <button class="btn-fu btn-fu-ign" onclick="ignorarFollowup('${o.id}')">Ignorar</button>
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div class="orc-followup-banner">
+    <div class="fu-titulo">📬 ${pending.length} orçamento${pending.length>1?'s':''} aguardando follow-up</div>
+    ${itens}
+  </div>`;
+}
 function excluirOrcUnico(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)return;document.getElementById('confirm-title').textContent='Excluir orçamento';document.getElementById('confirm-msg').textContent=`Excluir "${o.id}"? Irreversível.`;document.getElementById('confirm-ok').onclick=()=>{window.orcamentos=window.orcamentos.filter(x=>x.id!==id);salvarOrcamentos();renderAllOrc();fecharModal();fecharConfirm();toast('Excluído.');};document.getElementById('confirm-overlay').classList.add('open');}
 
 let orcItensEdicao=[];
@@ -2440,7 +2524,7 @@ function salvarEdicaoOrc(id){
   salvarOrcamentos();renderAllOrc();fecharModal();abrirModalOrc(id);toast('Orçamento atualizado!');
 }
 function popularMesesOrc(){const sel=document.getElementById('orc-mes-sel');if(!sel)return;const meses=[...new Set(window.orcamentos.flatMap(o=>[getMesAno(o.emissao),getMesAno(o.validade)].filter(Boolean)))].sort().reverse();const atual=sel.value;sel.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}"${m===atual?' selected':''}>${labelMes(m)}</option>`).join('');}
-function renderAllOrc(){popularMesesOrc();renderOrcMetrics();renderOrcFiltros();renderOrcLista();}
+function renderAllOrc(){popularMesesOrc();renderOrcMetrics();renderFollowupBanner();renderOrcFiltros();renderOrcLista();}
 
 // ── CONTRATOS ────────────────────────────────────────────
 function salvarContratos(){lsSet(CTR_KEY,JSON.stringify(window.contratos));}
@@ -2915,7 +2999,7 @@ function renderDashboard(){
     ? `<div class="dash-alert">
         <i class="ti ti-clock-exclamation" style="font-size:18px;flex-shrink:0"></i>
         <span><strong>${atrasadas.length} OS</strong> com prazo vencido.
-        <span style="cursor:pointer;text-decoration:underline" onclick="setPage('os');setFiltro('andamento')">Ver →</span></span>
+        <span style="cursor:pointer;text-decoration:underline" onclick="setPage('os');setFiltro('atrasadas')">Ver →</span></span>
       </div>` : '';
 
   const isDark    = window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -2963,7 +3047,7 @@ function renderDashboard(){
         <div class="dash-kpi-label">Conversão orç→OS</div>
         <div class="dash-kpi-sub">${orcAprov} de ${orcTotal}</div>
       </div>
-      <div class="dash-kpi" style="cursor:pointer" onclick="setPage('os');setFiltro('andamento')">
+      <div class="dash-kpi" style="cursor:pointer" onclick="setPage('os');setFiltro('atrasadas')">
         <div class="dash-kpi-icon" style="background:var(--red-bg)"><i class="ti ti-clock-exclamation" style="color:var(--red)"></i></div>
         <div class="dash-kpi-val" style="color:var(--red)">${atrasadas.length}</div>
         <div class="dash-kpi-label">OS em atraso</div>
@@ -3245,7 +3329,7 @@ if(sessionStorage.getItem('sf_auth')==='ok'){renderAll();}
 // ── PWA: SERVICE WORKER INLINE ────────────────────────────
 if('serviceWorker' in navigator && location.protocol === 'https:'){
   const swCode = `
-const CACHE = 'sf-v32';
+const CACHE = 'sf-v33';
 const URLS  = []; // arquivo único — cache automático pelo fetch handler
 
 self.addEventListener('install', e => {
