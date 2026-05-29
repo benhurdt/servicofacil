@@ -566,7 +566,7 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
 <div class="hdr">
   <div class="logo">Serviço<span>Fácil</span></div>
   <div class="hdr-right">
-    <span class="hdr-version">v33.0</span>
+    <span class="hdr-version">v34.0</span>
     <button class="emp-btn" id="emp-btn" onclick="setPage('config')">Configurar empresa</button>
   </div>
 </div>
@@ -797,6 +797,7 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
     <div class="toolbar">
       <div class="filters" id="orc-filters"></div>
       <button class="btn btn-dark btn-sm" onclick="toggleFormOrc()"><i class="ti ti-plus" aria-hidden="true"></i>Novo Orçamento</button>
+      <button class="btn btn-ghost btn-sm" onclick="abrirModalSolMat()" style="border-color:var(--blue,#3b82f6);color:var(--blue,#3b82f6)">📦 Solicitar Material</button>
     </div>
     <div class="form-panel" id="orc-form-panel">
       <h3>Novo orçamento</h3>
@@ -2524,6 +2525,233 @@ function salvarEdicaoOrc(id){
   salvarOrcamentos();renderAllOrc();fecharModal();abrirModalOrc(id);toast('Orçamento atualizado!');
 }
 function popularMesesOrc(){const sel=document.getElementById('orc-mes-sel');if(!sel)return;const meses=[...new Set(window.orcamentos.flatMap(o=>[getMesAno(o.emissao),getMesAno(o.validade)].filter(Boolean)))].sort().reverse();const atual=sel.value;sel.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}"${m===atual?' selected':''}>${labelMes(m)}</option>`).join('');}
+// ── SOLICITAÇÃO ORÇAMENTO MATERIAIS ──────────────────────
+const UNIDADES = ['un','kg','g','L','mL','m','m²','m³','sc','cx','rl','pc','par','jogo','lt'];
+const SOL_MAT_KEY = 'sf_sol_materiais';
+
+function getSolicitacoes(){
+  try{ return JSON.parse(localStorage.getItem(SOL_MAT_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function salvarSolicitacoes(lista){
+  try{ localStorage.setItem(SOL_MAT_KEY, JSON.stringify(lista)); }catch(e){}
+}
+function salvarSolicitacao(itens, fornecedor, prazo, obs){
+  const lista = getSolicitacoes();
+  lista.unshift({
+    id: Date.now().toString(36),
+    data: new Date().toLocaleDateString('pt-BR'),
+    hora: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    fornecedor, prazo, obs, itens
+  });
+  if(lista.length > 50) lista.splice(50);
+  salvarSolicitacoes(lista);
+  renderHistoricoSolMat();
+}
+function excluirSolicitacao(id){
+  const lista = getSolicitacoes().filter(s=>s.id!==id);
+  salvarSolicitacoes(lista);
+  renderHistoricoSolMat();
+}
+function renderHistoricoSolMat(){
+  const lista = getSolicitacoes();
+  const el = document.getElementById('solmat-historico');
+  if(!el) return;
+  if(!lista.length){
+    el.innerHTML='<div style="text-align:center;padding:16px;font-size:12px;color:var(--text3,#888)">Nenhuma solicitação enviada ainda.</div>';
+    return;
+  }
+  el.innerHTML = lista.map(s=>`
+    <div style="background:var(--bg,#fafafa);border:1px solid var(--border,#ddd);border-radius:8px;padding:11px 13px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--text,#1a1a1a);margin-bottom:2px">
+          ${s.fornecedor?'Para: '+s.fornecedor:'Sem fornecedor definido'}
+        </div>
+        <div style="font-size:11px;color:var(--text3,#888);margin-bottom:4px">${s.data} às ${s.hora} · ${s.itens.length} item(s)</div>
+        <div style="font-size:11px;color:var(--text2,#666);line-height:1.5">
+          ${s.itens.slice(0,3).map(i=>i.qtd+' '+i.unid+' — '+i.desc).join('<br>')}
+          ${s.itens.length>3?`<span style="color:var(--text3,#888)"> +${s.itens.length-3} mais...</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
+        <button onclick="reabrirSolicitacao('${s.id}')"
+          style="background:var(--surface2,#f0f0f0);border:1px solid var(--border,#ddd);color:var(--text2,#666);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;font-family:inherit">
+          ↺ Reabrir
+        </button>
+        <button onclick="excluirSolicitacao('${s.id}')"
+          style="background:var(--red-light,#fee2e2);border:1px solid var(--red-bd,#fca5a5);color:var(--red,#dc2626);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit">
+          🗑 Excluir
+        </button>
+      </div>
+    </div>`).join('');
+}
+function reabrirSolicitacao(id){
+  const s = getSolicitacoes().find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('solmat-fornecedor').value = s.fornecedor||'';
+  document.getElementById('solmat-prazo').value = s.prazo||'';
+  document.getElementById('solmat-obs').value = s.obs||'';
+  document.getElementById('solmat-itens').innerHTML='';
+  s.itens.forEach(it=>{
+    addItemSolMat();
+    const rows = document.querySelectorAll('#solmat-itens > div');
+    const row = rows[rows.length-1];
+    row.querySelector('.solmat-desc').value = it.desc||'';
+    row.querySelector('.solmat-qtd').value = it.qtd||'';
+    row.querySelector('.solmat-unid').value = it.unid||'un';
+  });
+  document.getElementById('solmat-itens').scrollIntoView({behavior:'smooth'});
+}
+
+function abrirModalSolMat(){
+  document.getElementById('solmat-fornecedor').value='';
+  document.getElementById('solmat-prazo').value='';
+  document.getElementById('solmat-obs').value='';
+  document.getElementById('solmat-itens').innerHTML='';
+  // Começa com 3 linhas
+  for(let i=0;i<3;i++) addItemSolMat();
+  const modal = document.getElementById('modal-solmat');
+  modal.style.display='flex';
+  renderHistoricoSolMat();
+  setTimeout(()=>document.getElementById('solmat-itens').querySelector('input')?.focus(),100);
+}
+
+function fecharModalSolMat(){
+  document.getElementById('modal-solmat').style.display='none';
+}
+
+function addItemSolMat(){
+  const container = document.getElementById('solmat-itens');
+  const idx = container.children.length;
+  const div = document.createElement('div');
+  div.style.cssText='display:grid;grid-template-columns:1fr 90px 80px 30px;gap:6px;align-items:center';
+  div.innerHTML=`
+    <input type="text" placeholder="Descrição do material" class="solmat-desc"
+      style="border:1px solid var(--border,#ddd);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--bg,#fafafa);color:var(--text,#1a1a1a);outline:none;font-family:inherit;width:100%">
+    <input type="number" placeholder="Qtd" min="0" step="any" class="solmat-qtd"
+      style="border:1px solid var(--border,#ddd);border-radius:8px;padding:8px 10px;font-size:13px;background:var(--bg,#fafafa);color:var(--text,#1a1a1a);outline:none;font-family:inherit;width:100%;text-align:center">
+    <select class="solmat-unid"
+      style="border:1px solid var(--border,#ddd);border-radius:8px;padding:8px 6px;font-size:13px;background:var(--bg,#fafafa);color:var(--text,#1a1a1a);outline:none;font-family:inherit;width:100%">
+      ${UNIDADES.map(u=>`<option value="${u}">${u}</option>`).join('')}
+    </select>
+    <button onclick="this.parentElement.remove()"
+      style="background:var(--red-light,#fee);border:1px solid var(--red-bd,#fcc);color:var(--red,#c00);border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+  `;
+  container.appendChild(div);
+}
+
+function enviarSolMatWpp(){
+  const fornecedor = document.getElementById('solmat-fornecedor').value.trim();
+  const prazo = document.getElementById('solmat-prazo').value.trim();
+  const obs = document.getElementById('solmat-obs').value.trim();
+  const linhas = document.querySelectorAll('#solmat-itens > div');
+  const itens = [];
+  linhas.forEach(l=>{
+    const desc = l.querySelector('.solmat-desc')?.value.trim();
+    const qtd  = l.querySelector('.solmat-qtd')?.value.trim();
+    const unid = l.querySelector('.solmat-unid')?.value;
+    if(desc) itens.push({desc, qtd: qtd||'—', unid: unid||'un'});
+  });
+  if(!itens.length){ alert('Adicione pelo menos um item.'); return; }
+
+  const nomeEmpresa = window.userData?.nome || 'Solicitante';
+  const nl = '\n';
+  let msg = '📦 *SOLICITAÇÃO DE ORÇAMENTO DE MATERIAIS*' + nl;
+  if(fornecedor) msg += 'Para: *'+fornecedor+'*' + nl;
+  msg += nl+'Solicitante: *'+nomeEmpresa+'*'+nl;
+  msg += nl+'*ITENS SOLICITADOS:*'+nl;
+  msg += '────────────────────'+nl;
+  itens.forEach((it,i)=>{
+    msg += (i+1)+'. '+it.desc+' — *'+it.qtd+' '+it.unid+'*'+nl;
+  });
+  msg += '────────────────────'+nl;
+  if(prazo) msg += nl+'⏰ *Prazo desejado:* '+prazo+nl;
+  if(obs) msg += nl+'📝 *Obs:* '+obs+nl;
+  msg += nl+'Por favor, enviar orçamento o mais breve possível. Obrigado!';
+
+  salvarSolicitacao(itens, fornecedor, prazo, obs);
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  fecharModalSolMat();
+}
+
+function gerarPDFSolMat(){
+  const fornecedor = document.getElementById('solmat-fornecedor').value.trim();
+  const prazo = document.getElementById('solmat-prazo').value.trim();
+  const obs = document.getElementById('solmat-obs').value.trim();
+  const linhas = document.querySelectorAll('#solmat-itens > div');
+  const itens = [];
+  linhas.forEach(l=>{
+    const desc = l.querySelector('.solmat-desc')?.value.trim();
+    const qtd  = l.querySelector('.solmat-qtd')?.value.trim();
+    const unid = l.querySelector('.solmat-unid')?.value;
+    if(desc) itens.push({desc, qtd: qtd||'—', unid: unid||'un'});
+  });
+  if(!itens.length){ alert('Adicione pelo menos um item.'); return; }
+
+  const nomeEmpresa = config.razao || empresa || 'Solicitante';
+  const dataHoje2 = new Date().toLocaleDateString('pt-BR');
+  const cab = montarCabecalhoDoc();
+  const linhasItens = itens.map((it,i)=>
+    `<tr><td style="padding:8px;border-bottom:1px solid #eeede8">${i+1}. ${it.desc}</td><td style="padding:8px;border-bottom:1px solid #eeede8;text-align:center">${it.qtd}</td><td style="padding:8px;border-bottom:1px solid #eeede8;text-align:center">${it.unid}</td></tr>`
+  ).join('');
+
+  salvarSolicitacao(itens, fornecedor, prazo, obs);
+  abrirBlob(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Solicitação de Orçamento de Materiais</title>
+  <style>
+    body{font-family:Arial,sans-serif;font-size:13px;color:#1a1917;margin:0;padding:24px;max-width:680px;margin:0 auto}
+    .cab{display:flex;gap:16px;align-items:flex-start;padding-bottom:16px;border-bottom:2px solid #1a1917;margin-bottom:20px}
+    .cab img{width:72px;height:72px;object-fit:contain}
+    .cab-info .nome{font-size:18px;font-weight:700;margin-bottom:4px}
+    .cab-info .sub{font-size:12px;color:#6b6a65;line-height:1.6}
+    .titulo{font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+    .sub-titulo{font-size:12px;color:#6b6a65;margin-bottom:20px}
+    .box{background:#f5f4f0;border:1px solid #d8d6ce;border-radius:8px;padding:12px 14px;margin-bottom:12px}
+    .label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#9e9c96;margin-bottom:3px}
+    .val{font-size:14px;font-weight:600}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px}
+    th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#9e9c96;padding:6px 8px;border-bottom:2px solid #1a1917}
+    .footer{margin-top:20px;font-size:11px;color:#9e9c96;text-align:center;border-top:1px solid #eeede8;padding-top:12px}
+    .assinatura{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:48px}
+    .ass-line{border-top:1px solid #1a1917;padding-top:6px;font-size:12px;color:#6b6a65;text-align:center;margin-top:36px}
+    @media print{button{display:none!important}}
+  </style></head><body>
+  ${cab}
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+    <div>
+      <div class="titulo">Solicitação de Orçamento de Materiais</div>
+      <div class="sub-titulo">Emitido em ${dataHoje2}</div>
+    </div>
+    ${prazo?`<div style="text-align:right;font-size:13px;color:#6b6a65">Prazo desejado:<br><strong>${prazo}</strong></div>`:''}
+  </div>
+  ${fornecedor?`<div class="grid"><div class="box"><div class="label">Para (Fornecedor)</div><div class="val">${fornecedor}</div></div><div class="box"><div class="label">Solicitante</div><div class="val">${nomeEmpresa}</div></div></div>`
+  :`<div class="box" style="margin-bottom:12px"><div class="label">Solicitante</div><div class="val">${nomeEmpresa}</div></div>`}
+  <table>
+    <thead><tr>
+      <th style="width:60%">Descrição do material</th>
+      <th style="width:20%;text-align:center">Quantidade</th>
+      <th style="width:20%;text-align:center">Unidade</th>
+    </tr></thead>
+    <tbody>${linhasItens}</tbody>
+  </table>
+  ${obs?`<div class="box"><div class="label">Observações</div><div style="font-size:13px;line-height:1.6">${obs}</div></div>`:''}
+  <div class="assinatura">
+    <div><div class="ass-line">Solicitante — ${nomeEmpresa}</div></div>
+    <div><div class="ass-line">Fornecedor — ${fornecedor||'_____________________'}</div></div>
+  </div>
+  <div class="footer">ServiçoFácil · ${new Date().toLocaleString('pt-BR')}</div>
+  <div style="margin-top:20px">
+    <button onclick="window.print()" style="padding:10px 20px;background:#1a1917;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨 Imprimir / Salvar PDF</button>
+  </div>
+  </body></html>`);
+}
+
+// Fecha modal ao clicar fora
+document.getElementById('modal-solmat')?.addEventListener('click',function(e){
+  if(e.target===this) fecharModalSolMat();
+});
+
 function renderAllOrc(){popularMesesOrc();renderOrcMetrics();renderFollowupBanner();renderOrcFiltros();renderOrcLista();}
 
 // ── CONTRATOS ────────────────────────────────────────────
@@ -3329,7 +3557,7 @@ if(sessionStorage.getItem('sf_auth')==='ok'){renderAll();}
 // ── PWA: SERVICE WORKER INLINE ────────────────────────────
 if('serviceWorker' in navigator && location.protocol === 'https:'){
   const swCode = `
-const CACHE = 'sf-v33';
+const CACHE = 'sf-v34';
 const URLS  = []; // arquivo único — cache automático pelo fetch handler
 
 self.addEventListener('install', e => {
@@ -3417,6 +3645,55 @@ window.addEventListener('appinstalled', () => {
   console.info('[SF] App instalado com sucesso.');
 });
 </script>
+
+<!-- MODAL SOLICITAÇÃO ORÇAMENTO MATERIAIS -->
+<div class="modal-overlay" id="modal-solmat" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:flex-end;justify-content:center">
+  <div style="background:var(--surface,#fff);width:100%;max-width:600px;border-radius:14px 14px 0 0;max-height:90vh;overflow-y:auto;padding:18px 18px 32px;animation:slideUp .22s ease">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--text,#1a1a1a)">📦 Solicitar Orçamento de Materiais</div>
+        <div style="font-size:11px;color:var(--text3,#888);margin-top:2px">Envie pelo WhatsApp para o fornecedor</div>
+      </div>
+      <button onclick="fecharModalSolMat()" style="background:var(--surface2,#f5f5f5);border:1px solid var(--border,#ddd);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--text2,#666);display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3,#888);display:block;margin-bottom:5px">Fornecedor (opcional)</label>
+      <input id="solmat-fornecedor" type="text" placeholder="Nome do fornecedor"
+        style="width:100%;border:1px solid var(--border,#ddd);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg,#fafafa);color:var(--text,#1a1a1a);outline:none;font-family:inherit">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3,#888);display:block;margin-bottom:5px">Prazo desejado (opcional)</label>
+      <input id="solmat-prazo" type="text" placeholder="Ex: até sexta-feira, urgente, sem pressa..."
+        style="width:100%;border:1px solid var(--border,#ddd);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg,#fafafa);color:var(--text,#1a1a1a);outline:none;font-family:inherit">
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3,#888)">Itens *</label>
+        <button onclick="addItemSolMat()" style="background:transparent;border:1px dashed var(--border,#ddd);color:var(--text2,#666);font-size:12px;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:inherit">+ Adicionar item</button>
+      </div>
+      <div id="solmat-itens" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3,#888);display:block;margin-bottom:5px">Observação (opcional)</label>
+      <textarea id="solmat-obs" placeholder="Ex: Verificar disponibilidade antes de confirmar, aceito produto similar..."
+        style="width:100%;border:1px solid var(--border,#ddd);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg,#fafafa);color:var(--text,#1a1a1a);outline:none;font-family:inherit;resize:vertical;min-height:64px"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button onclick="enviarSolMatWpp()"
+        style="flex:1;background:#25D366;color:#fff;border:none;border-radius:8px;padding:13px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        📱 Enviar pelo WhatsApp
+      </button>
+      <button onclick="gerarPDFSolMat()"
+        style="flex:1;background:#1a1917;color:#fff;border:none;border-radius:8px;padding:13px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        🖨 Gerar PDF
+      </button>
+    </div>
+    <div style="border-top:1px solid var(--border,#ddd);padding-top:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3,#888);margin-bottom:10px">Histórico de solicitações</div>
+      <div id="solmat-historico"></div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
