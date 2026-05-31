@@ -542,6 +542,86 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
 .doc-header-logo{width:64px;height:64px;object-fit:contain;flex-shrink:0}
 .doc-header-empresa{font-size:17px;font-weight:700;margin-bottom:3px}
 .doc-header-sub{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* ── DASHBOARD KPIs ─────────────────────────────────── */
+.dash-kpis{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:12px;margin-bottom:1.1rem;
+}
+@media(min-width:480px){.dash-kpis{grid-template-columns:repeat(4,1fr)}}
+.dash-kpi{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--rlg);
+  padding:14px 14px 12px;
+  box-shadow:var(--shadow);
+  position:relative;
+  overflow:hidden;
+  transition:box-shadow .15s;
+}
+.dash-kpi:hover{box-shadow:0 4px 16px rgba(0,0,0,.12)}
+/* Borda colorida no topo de cada card */
+.dash-kpi::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:3px;
+  border-radius:var(--rlg) var(--rlg) 0 0;
+}
+.dash-kpi:nth-child(1)::before{background:var(--blue)}
+.dash-kpi:nth-child(2)::before{background:var(--green)}
+.dash-kpi:nth-child(3)::before{background:var(--amber)}
+.dash-kpi:nth-child(4)::before{background:var(--red)}
+.dash-kpi-icon{
+  width:32px;height:32px;border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;margin-bottom:10px;
+}
+.dash-kpi-val{
+  font-size:20px;font-weight:700;line-height:1.1;
+  margin-bottom:5px;letter-spacing:-.01em;
+}
+.dash-kpi-label{
+  font-size:11px;font-weight:600;color:var(--text2);
+  text-transform:uppercase;letter-spacing:.07em;
+  margin-bottom:3px;line-height:1.3;
+}
+.dash-kpi-sub{
+  font-size:11px;color:var(--text3);line-height:1.3;
+}
+.dash-alert{
+  display:flex;align-items:center;gap:10px;
+  background:var(--red-bg);border:1px solid var(--red-bd);
+  border-left:3px solid var(--red);
+  border-radius:var(--r);padding:10px 14px;
+  margin-bottom:12px;font-size:13px;color:var(--red);
+}
+
+/* ── DASHBOARD ALERTAS CRM ──────────────────────────── */
+.dash-crm-alert{
+  display:flex;align-items:flex-start;gap:10px;
+  border-radius:var(--r);padding:10px 14px;
+  margin-bottom:8px;font-size:13px;
+  border-left:3px solid;cursor:pointer;
+  transition:opacity .15s;
+}
+.dash-crm-alert:hover{opacity:.85}
+.dash-crm-alert.aniv{
+  background:rgba(236,72,153,.06);
+  border-color:#EC4899;color:#BE185D;
+}
+.dash-crm-alert.morno{
+  background:var(--amber-bg);
+  border-color:var(--amber);color:var(--amber);
+}
+.dash-crm-alert.sumido{
+  background:var(--red-bg);
+  border-color:var(--red);color:var(--red);
+}
+.dash-crm-alert strong{font-weight:700}
+.dash-crm-alert .crm-link{
+  font-size:12px;text-decoration:underline;
+  margin-left:auto;flex-shrink:0;
+}
 </style>
 
 </head>
@@ -590,6 +670,9 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
   <div class="nav-tab" id="nav-contratos" onclick="setPage('contratos')">
     <i class="ti ti-writing" aria-hidden="true"></i>Contratos
   </div>
+  <div class="nav-tab" id="nav-clientes" onclick="setPage('clientes')">
+    <i class="ti ti-users" aria-hidden="true"></i>Clientes
+  </div>
   <div class="nav-tab" id="nav-config" onclick="setPage('config')">
     <i class="ti ti-settings" aria-hidden="true"></i>Config
   </div>
@@ -600,6 +683,21 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
   <!-- PAGE DASHBOARD -->
   <div class="page" id="page-dashboard">
     <div id="dash-content"></div>
+  </div>
+
+  <!-- PAGE CLIENTES -->
+  <div class="page" id="page-clientes">
+    <div class="toolbar">
+      <div style="font-size:15px;font-weight:600">👥 Clientes</div>
+      <button class="btn btn-primary btn-sm" onclick="abrirModalCliente()">+ Novo cliente</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="filter-btn active" onclick="filtrarClientes('todos',this)">Todos</button>
+      <button class="filter-btn" onclick="filtrarClientes('aniversario',this)">🎂 Aniversário</button>
+      <button class="filter-btn" onclick="filtrarClientes('sumidos',this)">🔴 Sumidos +90d</button>
+      <button class="filter-btn" onclick="filtrarClientes('mornos',this)">🟡 Mornos 31-90d</button>
+    </div>
+    <div id="clientes-lista"></div>
   </div>
 
   <!-- PAGE OS (inclui Relatório OS) -->
@@ -1206,6 +1304,7 @@ function setPage(p){
   if(p==='orcamentos'){renderAllOrc();}
   if(p==='contratos'){renderContratos();}
   if(p==='dashboard'){renderDashboard();}
+  if(p==='clientes'){renderClientes();}
   if(p==='config'){carregarConfig();carregarCatalogo();renderCatalogo();}
 }
 
@@ -1371,6 +1470,8 @@ function salvarOS(){
   window.ordens.unshift(novaOS);
   lsSet(OS_KEY,JSON.stringify(window.ordens));
   invalidarCache();
+  // Auto-cadastra o cliente se ainda não existir
+  autoCadastrarCliente(cliente, telRaw);
   ['f-cliente','f-tel','f-desc','f-tec','f-valor'].forEach(id=>document.getElementById(id).value='');
   const fdobs=document.getElementById('f-desc-obs');if(fdobs)fdobs.value='';
   document.getElementById('form-panel').classList.remove('open');
@@ -2288,7 +2389,10 @@ function converterOrcEmOS(id){
     materiais.push({nome:o.projetoDesc||'Custo de projeto externo',qtd:'1',valor:String(o.projeto),isProjeto:true});
   }
   const novaOS={id:proximoId(),cliente:o.cliente,tel:o.tel,desc:o.desc,tec:o.tec,data:(()=>{if(o.entrega&&Number(o.entrega)>0){const d=new Date();d.setDate(d.getDate()+Number(o.entrega));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}return o.validade||'';})(),valor:totalOrc(o),status:'aberta',dataConclusao:'',servicosExecutados:'',maoDeObra:o.maoDeObra,materiais,pagamento:null,criadoEm:new Date().toISOString(),orcamentoOrigemId:o.id};
-  window.ordens.unshift(novaOS);lsSet(OS_KEY,JSON.stringify(window.ordens));invalidarCache();o.status='convertido';o.osGeradaId=novaOS.id;salvarOrcamentos();renderAll();renderAllOrc();fecharModal();toast('✅ OS '+novaOS.id+' criada! Valor: '+fmtM(novaOS.valor));setTimeout(()=>abrirModalOrc(id),300);
+  window.ordens.unshift(novaOS);lsSet(OS_KEY,JSON.stringify(window.ordens));invalidarCache();
+  // Auto-cadastra o cliente se ainda não existir
+  autoCadastrarCliente(o.cliente, o.tel);
+  o.status='convertido';o.osGeradaId=novaOS.id;salvarOrcamentos();renderAll();renderAllOrc();fecharModal();toast('✅ OS '+novaOS.id+' criada! Valor: '+fmtM(novaOS.valor));setTimeout(()=>abrirModalOrc(id),300);
 }
 function enviarOrcWpp(id){const o=window.orcamentos.find(x=>x.id===id);if(!o)return;const tot=totalOrc(o);const msg=`Olá, ${o.cliente}!\n\nAqui é *${config.razao||empresa||'nossa empresa'}*.\n\nOrçamento *${o.id}* para:\n\n*${o.desc}*\n\nTotal: *R$ ${tot.toLocaleString('pt-BR',{minimumFractionDigits:2})}*\n${o.entrega?'Prazo: *'+o.entrega+' dias após aprovação*\n':''}Válido até: *${fmt(o.validade)}*\n\n${o.obs?o.obs+'\n\n':''}Aguardamos sua confirmação!`;window.open(`https://wa.me/55${o.tel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');if(o.status==='rascunho'||o.status==='enviado'){o.status='enviado';o.enviadoEm=o.enviadoEm||new Date().toISOString();o.followupIgnorado=false;salvarOrcamentos();renderAllOrc();}toast('WhatsApp aberto!');}
 
@@ -3222,6 +3326,67 @@ function renderDashboard(){
   });
   const topClientes=Object.entries(porCliente).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
+  // ── ALERTAS CRM ─────────────────────────────────────────────
+  const hoje2 = new Date(); hoje2.setHours(0,0,0,0);
+  const clientes = window.clientes || [];
+
+  // Aniversariantes desta semana
+  const anivSemana = clientes.filter(cl => {
+    if(!cl.nascimento) return false;
+    const [d,m] = cl.nascimento.split('/').map(Number);
+    const aniv = new Date(hoje2.getFullYear(), m-1, d);
+    if(aniv < hoje2){ aniv.setFullYear(hoje2.getFullYear()+1); }
+    const diff = (aniv - hoje2)/(1000*60*60*24);
+    return diff >= 0 && diff <= 7;
+  });
+
+  // Clientes que não chamam há 31-90 dias (morningos)
+  const mornosIds = new Set();
+  const sumidosIds = new Set();
+  window.ordens.forEach(o => {
+    const cl = o.cliente;
+    if(!cl) return;
+    const dt = new Date(o.data+'T00:00:00');
+    if(isNaN(dt)) return;
+    const dias = (hoje2 - dt)/(1000*60*60*24);
+    if(dias > 90) sumidosIds.add(cl);
+    else if(dias > 30) mornosIds.add(cl);
+  });
+  // Remove dos mornos quem já aparece em sumidos
+  sumidosIds.forEach(id => mornosIds.delete(id));
+  // Remove quem teve OS recente (<=30 dias)
+  window.ordens.forEach(o => {
+    if(!o.cliente) return;
+    const dt = new Date(o.data+'T00:00:00');
+    const dias = (hoje2-dt)/(1000*60*60*24);
+    if(dias <= 30){ mornosIds.delete(o.cliente); sumidosIds.delete(o.cliente); }
+  });
+
+  // Monta HTML dos alertas CRM
+  let crmHTML = '';
+  if(anivSemana.length){
+    const nomes = anivSemana.map(cl=>cl.nome.split(' ')[0]).join(', ');
+    crmHTML += `<div class="dash-crm-alert aniv" onclick="setPage('clientes')">
+      <span style="font-size:18px">🎂</span>
+      <span><strong>${anivSemana.length} aniversariante(s)</strong> esta semana: ${nomes}
+      <span class="crm-link">Ver clientes →</span></span>
+    </div>`;
+  }
+  if(sumidosIds.size){
+    crmHTML += `<div class="dash-crm-alert sumido" onclick="setPage('clientes')">
+      <span style="font-size:16px">🔴</span>
+      <span><strong>${sumidosIds.size} cliente(s)</strong> sem atendimento há mais de 90 dias
+      <span class="crm-link">Reativar →</span></span>
+    </div>`;
+  }
+  if(mornosIds.size){
+    crmHTML += `<div class="dash-crm-alert morno" onclick="setPage('clientes')">
+      <span style="font-size:16px">🟡</span>
+      <span><strong>${mornosIds.size} cliente(s)</strong> sem atendimento há 31-90 dias
+      <span class="crm-link">Ver →</span></span>
+    </div>`;
+  }
+
   // Alerta OS em atraso (sempre global, não filtra por mês)
   const alertaHTML = atrasadas.length
     ? `<div class="dash-alert">
@@ -3240,6 +3405,7 @@ function renderDashboard(){
   const labelMesSel = isHoje ? 'este mês' : labelMes(mesSel);
 
   document.getElementById('dash-content').innerHTML = `
+    ${crmHTML}
     ${alertaHTML}
 
     <!-- SELETOR DE MÊS -->
@@ -3512,6 +3678,202 @@ function removerFotoConclusao(id, idx){
 // ── RENDER ALL (atualizado) ───────────────────────────────
 function renderAll(){renderMetrics();renderFilters();renderLista();}
 
+// ══════════════════════════════════════════════════════════════
+// CRM DE CLIENTES
+// ══════════════════════════════════════════════════════════════
+const CLI_KEY = 'sf_clientes';
+
+function getClientes(){
+  try{ return JSON.parse(localStorage.getItem(CLI_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function salvarClientesStorage(lista){
+  try{ localStorage.setItem(CLI_KEY, JSON.stringify(lista)); }
+  catch(e){}
+}
+// Expõe globalmente para os alertas do dashboard
+window.clientes = getClientes();
+
+// ── AUTO-CADASTRO DE CLIENTE ─────────────────────────────────
+// Chamada ao criar OS ou converter orçamento
+// Só cadastra se o cliente ainda não existir na lista
+function autoCadastrarCliente(nome, tel){
+  if(!nome) return;
+  const lista = getClientes();
+  // Verifica se já existe pelo nome (case insensitive)
+  const jaExiste = lista.some(cl =>
+    cl.nome.toLowerCase().trim() === nome.toLowerCase().trim()
+  );
+  if(jaExiste) return; // não duplica
+  const telLimpo = (tel||'').replace(/\D/g,'');
+  lista.unshift({
+    id: Date.now().toString(36),
+    nome: nome.trim(),
+    tel: telLimpo,
+    nascimento: '',
+    email: '',
+    obs: '',
+    criado: new Date().toLocaleDateString('pt-BR'),
+  });
+  salvarClientesStorage(lista);
+  window.clientes = lista;
+}
+
+function abrirModalCliente(id){
+  const cli = id ? getClientes().find(c=>c.id===id) : null;
+  document.getElementById('modal-cliente-titulo').textContent = cli ? 'Editar cliente' : 'Novo cliente';
+  document.getElementById('cli-id').value   = cli ? cli.id : '';
+  document.getElementById('cli-nome').value  = cli ? cli.nome : '';
+  document.getElementById('cli-tel').value   = cli ? cli.tel : '';
+  document.getElementById('cli-nasc').value  = cli ? cli.nascimento : '';
+  document.getElementById('cli-email').value = cli ? cli.email : '';
+  document.getElementById('cli-obs').value   = cli ? cli.obs : '';
+  document.getElementById('modal-cliente').style.display='flex';
+  setTimeout(()=>document.getElementById('cli-nome').focus(),100);
+}
+
+function fecharModalCliente(){
+  document.getElementById('modal-cliente').style.display='none';
+}
+
+function salvarCliente(){
+  const nome = document.getElementById('cli-nome').value.trim();
+  if(!nome){ alert('Informe o nome do cliente.'); return; }
+  const id  = document.getElementById('cli-id').value || Date.now().toString(36);
+  const tel  = document.getElementById('cli-tel').value.trim();
+  const nasc = document.getElementById('cli-nasc').value.trim();
+  const email= document.getElementById('cli-email').value.trim();
+  const obs  = document.getElementById('cli-obs').value.trim();
+  const lista = getClientes().filter(c=>c.id!==id);
+  lista.unshift({id, nome, tel, nascimento:nasc, email, obs,
+    criado: new Date().toLocaleDateString('pt-BR')});
+  salvarClientesStorage(lista);
+  window.clientes = lista;
+  fecharModalCliente();
+  renderClientes('todos');
+  if(document.getElementById('page-dashboard').style.display!=='none') renderDashboard();
+  toast('Cliente salvo!');
+}
+
+function excluirCliente(id){
+  if(!confirm('Excluir este cliente?')) return;
+  const lista = getClientes().filter(c=>c.id!==id);
+  salvarClientesStorage(lista);
+  window.clientes = lista;
+  renderClientes('todos');
+  toast('Cliente excluído.');
+}
+
+let _filtroClientes = 'todos';
+function filtrarClientes(filtro, el){
+  _filtroClientes = filtro;
+  document.querySelectorAll('#page-clientes .filter-btn')
+    .forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderClientes(filtro);
+}
+
+function renderClientes(filtro){
+  filtro = filtro || _filtroClientes || 'todos';
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  let lista = getClientes();
+
+  // Calcula última OS de cada cliente
+  const ultimaOS = {};
+  window.ordens.forEach(o=>{
+    if(!o.cliente) return;
+    const dt = new Date(o.data+'T00:00:00');
+    if(!ultimaOS[o.cliente] || dt > ultimaOS[o.cliente]) ultimaOS[o.cliente]=dt;
+  });
+
+  // Aplica filtro
+  if(filtro==='aniversario'){
+    lista = lista.filter(cl=>{
+      if(!cl.nascimento) return false;
+      const [d,m] = cl.nascimento.split('/').map(Number);
+      const aniv = new Date(hoje.getFullYear(),m-1,d);
+      if(aniv < hoje) aniv.setFullYear(hoje.getFullYear()+1);
+      return (aniv-hoje)/(1000*60*60*24) <= 7;
+    });
+  } else if(filtro==='sumidos'){
+    lista = lista.filter(cl=>{
+      const ult = ultimaOS[cl.nome];
+      return ult && (hoje-ult)/(1000*60*60*24) > 90;
+    });
+  } else if(filtro==='mornos'){
+    lista = lista.filter(cl=>{
+      const ult = ultimaOS[cl.nome];
+      if(!ult) return false;
+      const d = (hoje-ult)/(1000*60*60*24);
+      return d > 30 && d <= 90;
+    });
+  }
+
+  const el = document.getElementById('clientes-lista');
+  if(!lista.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text3);font-size:14px">Nenhum cliente encontrado.</div>';
+    return;
+  }
+
+  el.innerHTML = lista.map(cl=>{
+    const ult = ultimaOS[cl.nome];
+    const diasSem = ult ? Math.round((hoje-ult)/(1000*60*60*24)) : null;
+    let badge = '';
+    if(diasSem===null) badge='<span style="font-size:10px;color:var(--text3)">sem OS</span>';
+    else if(diasSem>90) badge='<span style="font-size:10px;background:var(--red-bg);color:var(--red);padding:2px 7px;border-radius:10px">🔴 +90d</span>';
+    else if(diasSem>30) badge='<span style="font-size:10px;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:10px">🟡 '+diasSem+'d</span>';
+    else badge='<span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 7px;border-radius:10px">🟢 '+diasSem+'d</span>';
+
+    // Verifica aniversário
+    let anivBadge = '';
+    if(cl.nascimento){
+      const [d,m] = cl.nascimento.split('/').map(Number);
+      const aniv = new Date(hoje.getFullYear(),m-1,d);
+      if(aniv < hoje) aniv.setFullYear(hoje.getFullYear()+1);
+      const diff = Math.round((aniv-hoje)/(1000*60*60*24));
+      if(diff===0) anivBadge='🎂 Hoje!';
+      else if(diff<=7) anivBadge='🎂 em '+diff+'d';
+    }
+
+    // Mensagens de fidelização
+    const wppNum = cl.tel?cl.tel.replace(/\D/g,''):'';
+    const nomeFirst = cl.nome.split(' ')[0];
+    const msgAniv = encodeURIComponent('Olá, '+nomeFirst+'! 🎂 Hoje é seu dia especial e a gente não podia deixar passar! Feliz aniversário! 🎉 Que tal comemorar com um mimo especial? Temos um desconto exclusivo esperando por você!');
+    const msgReativ = encodeURIComponent('Olá, '+nomeFirst+'! 😊 Faz um tempinho que não te atendo. Sentimos sua falta! Se precisar de qualquer serviço, estou à disposição. Abraço!');
+    const msgPosServ = encodeURIComponent('Olá, '+nomeFirst+'! Espero que tenha gostado do atendimento! 😊 Se puder, deixa sua avaliação. Fico à disposição para o que precisar!');
+    const msgOferta = encodeURIComponent('Olá, '+nomeFirst+'! Tudo bem? 😊 Tenho uma novidade que pode te interessar. Quando quiser conversar, é só chamar!');
+
+    const wppBase = wppNum ? 'https://wa.me/55'+wppNum+'?text=' : 'https://wa.me/?text=';
+
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rlg);padding:14px;margin-bottom:8px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">${cl.nome} ${anivBadge?'<span style="font-size:12px;color:#EC4899">'+anivBadge+'</span>':''}</div>
+          <div style="font-size:12px;color:var(--text3)">${cl.tel||'—'} ${cl.email?'· '+cl.email:''}</div>
+          ${cl.nascimento?'<div style="font-size:11px;color:var(--text3);margin-top:2px">🎂 '+cl.nascimento+'</div>':''}
+          ${cl.obs?'<div style="font-size:12px;color:var(--text2);margin-top:4px;font-style:italic">'+cl.obs+'</div>':''}
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          ${badge}
+          <button onclick="abrirModalCliente('${cl.id}')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px">✏️</button>
+          <button onclick="excluirCliente('${cl.id}')" style="background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px">🗑</button>
+        </div>
+      </div>
+      ${wppNum?`<div style="display:flex;gap:6px;flex-wrap:wrap">
+        <a href="${wppBase+msgAniv}" target="_blank" style="font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.2);color:#BE185D;text-decoration:none;white-space:nowrap">🎂 Aniversário</a>
+        <a href="${wppBase+msgReativ}" target="_blank" style="font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);text-decoration:none;white-space:nowrap">💬 Reativar</a>
+        <a href="${wppBase+msgPosServ}" target="_blank" style="font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);text-decoration:none;white-space:nowrap">⭐ Pós-serviço</a>
+        <a href="${wppBase+msgOferta}" target="_blank" style="font-size:11px;font-weight:600;padding:5px 10px;border-radius:6px;background:var(--blue-bg);border:1px solid var(--blue-bd);color:var(--blue);text-decoration:none;white-space:nowrap">🎁 Oferta</a>
+      </div>`:'<div style="font-size:11px;color:var(--text3)">Sem WhatsApp cadastrado</div>'}
+    </div>`;
+  }).join('');
+}
+
+// Fecha modal ao clicar fora
+document.getElementById('modal-cliente')?.addEventListener('click',function(e){
+  if(e.target===this) fecharModalCliente();
+});
+
 // ── INIT ─────────────────────────────────────────────────
 if(config.razao){document.getElementById('emp-btn').textContent=config.razao;}
 else if(empresa){document.getElementById('emp-btn').textContent=empresa;}
@@ -3645,6 +4007,32 @@ window.addEventListener('appinstalled', () => {
   console.info('[SF] App instalado com sucesso.');
 });
 </script>
+
+<!-- MODAL CLIENTE CRM -->
+<div class="modal-overlay" id="modal-cliente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:flex-end;justify-content:center">
+  <div style="background:var(--surface,#fff);width:100%;max-width:600px;border-radius:14px 14px 0 0;max-height:90vh;overflow-y:auto;padding:18px 18px 32px;animation:slideUp .22s ease">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:700;color:var(--text,#1a1a1a)" id="modal-cliente-titulo">Novo cliente</div>
+      <button onclick="fecharModalCliente()" style="background:var(--surface2,#f5f5f5);border:1px solid var(--border,#ddd);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--text2,#666);display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <input type="hidden" id="cli-id">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="field"><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);display:block;margin-bottom:5px">Nome *</label>
+        <input id="cli-nome" type="text" placeholder="Nome completo" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg);color:var(--text);outline:none;font-family:inherit"></div>
+      <div class="field"><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);display:block;margin-bottom:5px">WhatsApp</label>
+        <input id="cli-tel" type="tel" placeholder="(51) 99999-9999" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg);color:var(--text);outline:none;font-family:inherit"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="field"><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);display:block;margin-bottom:5px">Data de aniversário</label>
+        <input id="cli-nasc" type="text" placeholder="DD/MM" maxlength="5" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg);color:var(--text);outline:none;font-family:inherit"></div>
+      <div class="field"><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);display:block;margin-bottom:5px">E-mail</label>
+        <input id="cli-email" type="email" placeholder="email@exemplo.com" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg);color:var(--text);outline:none;font-family:inherit"></div>
+    </div>
+    <div style="margin-bottom:16px"><label style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);display:block;margin-bottom:5px">Observação</label>
+      <textarea id="cli-obs" placeholder="Preferências, histórico, observações..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;background:var(--bg);color:var(--text);outline:none;font-family:inherit;resize:vertical;min-height:64px"></textarea></div>
+    <button onclick="salvarCliente()" style="width:100%;background:#1A1917;color:#fff;border:none;border-radius:8px;padding:12px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer">💾 Salvar cliente</button>
+  </div>
+</div>
 
 <!-- MODAL SOLICITAÇÃO ORÇAMENTO MATERIAIS -->
 <div class="modal-overlay" id="modal-solmat" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:flex-end;justify-content:center">
