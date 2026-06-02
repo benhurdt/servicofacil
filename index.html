@@ -637,7 +637,7 @@ input,select,textarea,button{font-family:inherit;font-size:15px}
       onkeydown="if(event.key==='Enter') verificarSenha()">
     <div class="login-erro" id="login-erro">Senha incorreta. Tente novamente.</div>
     <button class="login-btn" onclick="verificarSenha()">Entrar</button>
-    <div class="login-info">Período de teste: 15 dias<br>Senhas: A2026 até U2026<br>Dúvidas? Entre em contato com o administrador.</div>
+    <div class="login-info">Dúvidas ou para assinar? Entre em contato com o administrador.</div>
   </div>
 </div>
 
@@ -1148,7 +1148,7 @@ const TRIAL_DIAS     = 15;
 
 // ── AUTENTICAÇÃO ─────────────────────────────────────────
 const SENHA_ADMIN  = 'BDT@admin2026';
-const SENHAS_TESTE = ['A2026','B2026','C2026','D2026','E2026','F2026','G2026','H2026','I2026','J2026','K2026','L2026','M2026','N2026','O2026','P2026','Q2026','R2026','S2026','T2026','U2026'];
+const SENHAS_TESTE = ['pretto2026','teste15dias'];
 
 function verificarSenha(){
   const senha = document.getElementById('login-input').value.trim();
